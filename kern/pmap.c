@@ -278,6 +278,7 @@ page_init(void)
 	// free pages!
 	// LLM-Assisted with this code
 	size_t i;
+	physaddr_t first_free;
 
 	pages[0].pp_ref = 1;
 	pages[0].pp_link = NULL;
@@ -293,7 +294,7 @@ page_init(void)
 		pages[i].pp_link = NULL;
 	}
 
-	physaddr_t first_free = PADDR(boot_alloc(0));
+	first_free = PADDR(boot_alloc(0));
 	for (i = EXTPHYSMEM / PGSIZE; i < npages; i++) {
 		if (i < first_free / PGSIZE) {
 			pages[i].pp_ref = 1;
@@ -396,19 +397,23 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 {
 	// Fill this function in
 	// LLM-Assisted with this code
-	pde_t *pde = &pgdir[PDX(va)];
+	pde_t *pde;
+	pte_t *pgtab
+	struct PageInfo *pp
+
+	pde = &pgdir[PDX(va)];
 
 	if (!(*pde & PTE_P)) {
 		if (!create)
 			return NULL;
-		struct PageInfo *pp = page_alloc(ALLOC_ZERO);
+		pp = page_alloc(ALLOC_ZERO);
 		if (!pp)
 			return NULL;
 		pp->pp_ref++;
 		*pde = page2pa(pp) | PTE_P | PTE_W | PTE_U;
 	}
 
-	pte_t *pgtab = (pte_t *) KADDR(PTE_ADDR(*pde));
+	pgtab = (pte_t *) KADDR(PTE_ADDR(*pde));
 	return &pgtab[PTX(va)];
 }
 
@@ -467,7 +472,9 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 {
 	// Fill this function in
 	// LLM-Assisted with this code
-	pte_t *pte = pgdir_walk(pgdir, va, 1);
+	pte_t *pte;
+
+	pte = pgdir_walk(pgdir, va, 1);
 
 	if (!pte)
 		return -E_NO_MEM;
@@ -497,7 +504,9 @@ page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 {
 	// Fill this function in
 	// LLM-Assisted with this code
-	pte_t *pte = pgdir_walk(pgdir, va, 0);
+	pte_t *pte:
+	
+	pte = pgdir_walk(pgdir, va, 0);
 
 	if (!pte || !(*pte & PTE_P))
 		return NULL;
