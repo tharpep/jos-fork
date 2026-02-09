@@ -398,8 +398,8 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 	// Fill this function in
 	// LLM-Assisted with this code
 	pde_t *pde;
-	pte_t *pgtab
-	struct PageInfo *pp
+	pte_t *pgtab;
+	struct PageInfo *pp;
 
 	pde = &pgdir[PDX(va)];
 
@@ -504,8 +504,8 @@ page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 {
 	// Fill this function in
 	// LLM-Assisted with this code
-	pte_t *pte:
-	
+	pte_t *pte;
+
 	pte = pgdir_walk(pgdir, va, 0);
 
 	if (!pte || !(*pte & PTE_P))
