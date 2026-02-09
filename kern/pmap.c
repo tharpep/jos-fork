@@ -275,11 +275,33 @@ page_init(void)
 	// Change the code to reflect this.
 	// NB: DO NOT actually touch the physical memory corresponding to
 	// free pages!
+	// LLM-Assisted with this code
 	size_t i;
-	for (i = 0; i < npages; i++) {
+	
+	pages[0].pp_ref = 1;
+	pages[0].pp_link = NULL;
+
+	for (i = 1; i < npages_basemem; i++) {
 		pages[i].pp_ref = 0;
 		pages[i].pp_link = page_free_list;
 		page_free_list = &pages[i];
+	}
+
+	for (i = IOPHYSMEM / PGSIZE; i < EXTPHYSMEM / PGSIZE; i++) {
+		pages[i].pp_ref = 1;
+		pages[i].pp_link = NULL;
+	}
+
+	physaddr_t first_free = PADDR(boot_alloc(0));
+	for (i = EXTPHYSMEM / PGSIZE; i < npages; i++) {
+		if (i < first_free / PGSIZE) {
+			pages[i].pp_ref = 1;
+			pages[i].pp_link = NULL;
+		} else {
+			pages[i].pp_ref = 0;
+			pages[i].pp_link = page_free_list;
+			page_free_list = &pages[i];
+		}
 	}
 }
 
