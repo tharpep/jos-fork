@@ -466,6 +466,18 @@ int
 page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 {
 	// Fill this function in
+	// LLM-Assisted with this code
+	pte_t *pte = pgdir_walk(pgdir, va, 1);
+
+	if (!pte)
+		return -E_NO_MEM;
+
+	pp->pp_ref++;
+
+	if (*pte & PTE_P)
+		page_remove(pgdir, va);
+
+	*pte = page2pa(pp) | perm | PTE_P;
 	return 0;
 }
 
