@@ -395,7 +395,21 @@ pte_t *
 pgdir_walk(pde_t *pgdir, const void *va, int create)
 {
 	// Fill this function in
-	return NULL;
+	// LLM-Assisted with this code
+	pde_t *pde = &pgdir[PDX(va)];
+
+	if (!(*pde & PTE_P)) {
+		if (!create)
+			return NULL;
+		struct PageInfo *pp = page_alloc(ALLOC_ZERO);
+		if (!pp)
+			return NULL;
+		pp->pp_ref++;
+		*pde = page2pa(pp) | PTE_P | PTE_W | PTE_U;
+	}
+
+	pte_t *pgtab = (pte_t *) KADDR(PTE_ADDR(*pde));
+	return &pgtab[PTX(va)];
 }
 
 //
