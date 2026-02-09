@@ -277,7 +277,7 @@ page_init(void)
 	// free pages!
 	// LLM-Assisted with this code
 	size_t i;
-	
+
 	pages[0].pp_ref = 1;
 	pages[0].pp_link = NULL;
 
@@ -321,7 +321,20 @@ struct PageInfo *
 page_alloc(int alloc_flags)
 {
 	// Fill this function in
-	return 0;
+	// LLM-Assisted with this code
+	struct PageInfo *pp;
+
+	if (!page_free_list)
+		return NULL;
+
+	pp = page_free_list;
+	page_free_list = pp->pp_link;
+	pp->pp_link = NULL;
+
+	if (alloc_flags & ALLOC_ZERO)
+		memset(page2kva(pp), 0, PGSIZE);
+
+	return pp;
 }
 
 //
