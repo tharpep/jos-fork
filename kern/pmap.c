@@ -514,6 +514,19 @@ void
 page_remove(pde_t *pgdir, void *va)
 {
 	// Fill this function in
+	// LLM-Assisted with this code
+	pte_t *pte;
+
+	struct PageInfo *pp = page_lookup(pgdir, va, &pte);
+
+	if (!pp)
+		return;
+
+	page_decref(pp);
+
+	*pte = 0;
+
+	tlb_invalidate(pgdir, va);
 }
 
 //
