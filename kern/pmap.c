@@ -104,6 +104,7 @@ boot_alloc(uint32_t n)
 	// to a multiple of PGSIZE.
 	//
 	// LAB 2: Your code here.
+	// LLM-Assisted with this code
 	if (n == 0)
 	return nextfree;
 
@@ -347,6 +348,7 @@ page_free(struct PageInfo *pp)
 	// Fill this function in
 	// Hint: You may want to panic if pp->pp_ref is nonzero or
 	// pp->pp_link is not NULL.
+	// LLM-Assisted with this code
 	if (pp->pp_ref != 0)
 		panic("page_free: pp->pp_ref is nonzero");
 	if (pp->pp_link != NULL)
