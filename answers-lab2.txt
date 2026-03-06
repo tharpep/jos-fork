@@ -1,0 +1,41 @@
+**Exercise 3
+x should be uintptr_t. value is a char*, so casting it to an integer type has to preserve
+ it as a virtual address.
+
+**Exercise 5a
+    +--------+----------------------+---------------------------------------+
+    | Entry  | Base Virtual Address|  Points to (logically)                |
+    +========+======================+=======================================+
+    | 960-1023| 0xF0000000 .. 0xFFC00000 | Page tables for phys memory at KERNBASE |
+    +--------+----------------------+---------------------------------------+
+    | 959    | 0xEFC00000          | Page table for kernel stack           |
+    +--------+----------------------+---------------------------------------+
+    | 957    | 0xEF400000 (UVPT)   | kern_pgdir (recursive self-mapping)   |
+    +--------+----------------------+---------------------------------------+
+    | 956    | 0xEF000000 (UPAGES) | Page table for pages[] array         |
+    +--------+----------------------+---------------------------------------+
+    | 0      | 0x00000000          | [see next question]                    |
+    +--------+----------------------+---------------------------------------+
+    All other entries: 0.
+
+**Exercise 5b
+Pages above ULIM don't have PTE_U set, so user-mode access causes a page fault. 
+    The hardware checks it on every memory access.
+
+**Exercise 5c
+256MB. The kernel maps all physical memory starting at KERNBASE (0xF0000000), 
+    so the range is [KERNBASE, 0xFFFFFFFF] = 256MB.
+
+**Exercise 5d
+At 256MB there are 65536 physical pages:
+ - Page directory = 4KB
+ - Pages array = 65536 * 8 bytes = 512KB
+ - Page tables for KERNBASE mapping = 256MB / 4MB = 64 page tables = 256KB
+ - Page tables for UPAGES, kernel stack, UVPT = ~12KB
+ - Total overhead = ~784KB
+
+**Exercise 5e
+The transition to high EIP happens at "jmp *%eax", which goes to the address above KERNBASE. This works because entry_pgdir
+    maps both ranges [0, 4MB) and [KERNBASE, KERNBASE+4MB) to [0, 4MB), so the same physical code is accessible
+    at both address ranges during the transition. Its necessary because the kernel is linked at high addresses, 
+    so all symbol references expect addresses above KERNBASE.
