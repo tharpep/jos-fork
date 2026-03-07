@@ -191,13 +191,13 @@ env_setup_vm(struct Env *e)
 	// LAB 3: Your code here.
 	// LLM-Assisted code
 	e->env_pgdir = (pde_t *) page2kva(p);
-    p->pp_ref++;
+	p->pp_ref++;
 
-    for (i = 0; i < PDX(UTOP); i++)
-        e->env_pgdir[i] = 0;
+	for (i = 0; i < PDX(UTOP); i++)
+		e->env_pgdir[i] = 0;
 
-    for (i = PDX(UTOP); i < NPDENTRIES; i++)
-        e->env_pgdir[i] = kern_pgdir[i];
+	for (i = PDX(UTOP); i < NPDENTRIES; i++)
+		e->env_pgdir[i] = kern_pgdir[i];
 
 	// UVPT maps the env's own page table read-only.
 	// Permissions: kernel R, user R
