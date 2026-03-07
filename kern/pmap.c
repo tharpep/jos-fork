@@ -603,6 +603,18 @@ int
 user_mem_check(struct Env *env, const void *va, size_t len, int perm)
 {
 	// LAB 3: Your code here.
+	// LLM-Assisted code
+	uintptr_t start = (uintptr_t) va;
+	uintptr_t end = start + len;
+	uintptr_t addr;
+
+	for (addr = ROUNDDOWN(start, PGSIZE); addr < end; addr += PGSIZE) {
+		pte_t *pte = pgdir_walk(env->env_pgdir, (void *) addr, 0);
+		if (addr >= ULIM || !pte || !(*pte & PTE_P) || (*pte & perm) != perm) {
+			user_mem_check_addr = (addr < start) ? start : addr;
+			return -E_FAULT;
+		}
+	}
 
 	return 0;
 }
