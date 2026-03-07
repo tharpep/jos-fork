@@ -4,8 +4,6 @@
 #include <inc/memlayout.h>
 #include <inc/trap.h>
 
-
-
 ###################################################################
 # exceptions/interrupts
 ###################################################################
@@ -54,8 +52,42 @@
 // HINT 3 : READ Intel's manual to check if the trap includes an error code
 //          or not...
 
+# LLM-Assisted code
+TRAPHANDLER_NOEC(handler0, T_DIVIDE)    /* Divide error */
+TRAPHANDLER_NOEC(handler1, T_DEBUG)     /* Debug */
+TRAPHANDLER_NOEC(handler2, T_NMI)      /* NMI */
+TRAPHANDLER_NOEC(handler3, T_BRKPT)    /* Breakpoint */
+TRAPHANDLER_NOEC(handler4, T_OFLOW)    /* Overflow */
+TRAPHANDLER_NOEC(handler5, T_BOUND)    /* Bound Range */
+TRAPHANDLER_NOEC(handler6, T_ILLOP)    /* Invalid Opcode */
+TRAPHANDLER_NOEC(handler7, T_DEVICE)   /* Device Not Available */
+TRAPHANDLER(handler8, T_DBLFLT)        /* Double Fault */
+TRAPHANDLER_NOEC(handler9, 9)          /* Coprocessor Segment */
+TRAPHANDLER(handler10, T_TSS)          /* Invalid TSS */
+TRAPHANDLER(handler11, T_SEGNP)        /* Segment Not Present */
+TRAPHANDLER(handler12, T_STACK)        /* Stack Fault */
+TRAPHANDLER(handler13, T_GPFLT)        /* General Protection */
+TRAPHANDLER(handler14, T_PGFLT)        /* Page Fault */
+TRAPHANDLER_NOEC(handler15, 15)        /* Reserved */
+TRAPHANDLER_NOEC(handler16, T_FPERR)   /* x87 FP */
+TRAPHANDLER(handler17, T_ALIGN)        /* Alignment Check */
+TRAPHANDLER_NOEC(handler18, T_MCHK)    /* Machine Check */
+TRAPHANDLER_NOEC(handler19, T_SIMDERR) /* SIMD FP */
+
+TRAPHANDLER_NOEC(handler48, T_SYSCALL) /* Syscall */
+
 /*
  * Lab 3: Your code here for _alltraps
  */
+
+ _alltraps:
+    pushl %ds
+    pushl %es
+    pushal
+    movw $GD_KD, %ax
+    movw %ax, %ds
+    movw %ax, %es
+    pushl %esp
+    call trap
 
 
