@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script type="text/javascript" async="" src="Lab%20%233%20-%20User%20Environments%20-%20ECE469%20-%20Operating%20Systems%20Engineering%20_%20Spring%202026_files/analytics.js"></script><script type="text/javascript" async="" src="Lab%20%233%20-%20User%20Environments%20-%20ECE469%20-%20Operating%20Systems%20Engineering%20_%20Spring%202026_files/js"></script><script async="" src="Lab%20%233%20-%20User%20Environments%20-%20ECE469%20-%20Operating%20Systems%20Engineering%20_%20Spring%202026_files/js_002"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-93239312-1');
+  </script>
+  
+
+
+
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title> Lab #3 - User Environments - ECE469 - Operating Systems Engineering / Spring 2026 </title>
+  <meta name="description" content="IntroductionIn this lab you will implement the basic kernel facilities required toget a protected user-mode environment (i.e., “process”) running. Youwill en...">
+  
+  <link rel="stylesheet" href="Lab%20%233%20-%20User%20Environments%20-%20ECE469%20-%20Operating%20Systems%20Engineering%20_%20Spring%202026_files/main.css">
+  <link rel="canonical" href="http://purs3lab.github.io//ee469/assignments/03_assignment">
+  <link rel="alternate" type="application/rss+xml" title="ECE469 - Operating Systems Engineering / Spring 2026 - Purdue University" href="http://purs3lab.github.io//ee469/feed.xml">
+<link rel="stylesheet" id="open-sans-css" href="Lab%20%233%20-%20User%20Environments%20-%20ECE469%20-%20Operating%20Systems%20Engineering%20_%20Spring%202026_files/css_002.css" type="text/css" media="all">
+<link href="Lab%20%233%20-%20User%20Environments%20-%20ECE469%20-%20Operating%20Systems%20Engineering%20_%20Spring%202026_files/css.css" rel="stylesheet" type="text/css">
+
+
+
+
+<link rel="stylesheet" href="Lab%20%233%20-%20User%20Environments%20-%20ECE469%20-%20Operating%20Systems%20Engineering%20_%20Spring%202026_files/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper" style="z-index: 100;">
+      <table><tbody><tr>
+          <td><img width="75" src="Lab%20%233%20-%20User%20Environments%20-%20ECE469%20-%20Operating%20Systems%20Engineering%20_%20Spring%202026_files/logo.png" valign="middle"></td>
+          <td style="padding-left:10px;"><a class="schoolname" style="font-size: 15px;" href="https://engineering.purdue.edu/ECE">Purdue University</a>
+          <br>
+          <span style="margin-top: -2px;margin-bottom: -10px;" class="site-title"><a href="https://purs3lab.github.io/ee469/" title="ECE469 - Operating Systems Engineering / Spring 2026 - Purdue University"><b>ECE469 - Operating Systems Engineering</b></a></span>
+          <br>
+          <span class="coursesemeter" style="font-size: 12px;font-weight: bold;margin-top: 10px;display: block;">Spring 2026</span>
+          </td>
+        </tr></tbody></table>
+
+    <nav class="site-nav">
+
+      <a href="#" class="menu-icon menu.open">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"></path>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"></path>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"></path>
+        </svg>
+      </a>  
+
+    <div class="trigger"><h1>Main Navigation</h1>
+
+ <ul class="menu">
+    
+    <li>
+        <a class="page-link" href="https://purs3lab.github.io/ee469/">
+            <i class="fa fa-home fa-lg"></i> Home
+        </a>
+    </li>
+    
+    <li>
+        <a class="page-link" href="https://purs3lab.github.io/ee469/schedule/">
+            <i class="fas fa-calendar-alt"></i> Schedule
+        </a>
+    </li>
+    
+    <li>
+        <a class="page-link" href="https://purs3lab.github.io/ee469/labs/">
+            <i class="fas fa-user-graduate"></i> Labs
+        </a>
+    </li>
+    
+    <li>
+        <a class="page-link" href="https://purs3lab.github.io/ee469/materials/">
+            <i class="fas fa-book"></i> Reference Materials
+        </a>
+    </li>
+    
+</ul>
+
+     </div>  
+    </nav>
+
+  </div>
+
+  <div class="header-texture" style="height:100%; z-index: 0; position: absolute; top:0; right: 0; left: 0; 
+  background-image: url('/ee469/_images/pattern.png');">
+
+</div></header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Lab #3 - User Environments</h1>
+    <p class="post-meta">Released on Thursday 02/12/2026</p>
+  </header>
+
+  <div>
+    
+    <span style="font-weight: bold">Due Date:  03/06/2026</span>
+    
+  </div>
+
+  <br>
+  <article class="post-content">
+    <h1 id="introduction">Introduction</h1>
+
+<p>In this lab you will implement the basic kernel facilities required to
+get a protected user-mode environment (i.e., “process”) running. You
+will enhance the JOS kernel to set up the data structures to keep track
+of user environments, create a single user environment, load a program
+image into it, and start it running. You will also make the JOS kernel
+capable of handling any system calls the user environment makes and
+handling any other exceptions it causes.</p>
+
+<p><strong>In this lab, the terms <em>environment</em> and <em>process</em> are interchangeable - both refer to an abstraction
+that allows you to run a program. We introduce the term “environment” instead of the traditional
+term “process” in order to stress the point that JOS environments and
+UNIX processes provide different interfaces, and do not provide the same
+semantics.</strong></p>
+
+<h2 id="getting-started">Getting Started</h2>
+
+<p>Use Git to commit your changes after your Lab 2 submission (if any),
+fetch the latest version of the course repository, and then create a
+local branch called <code class="language-plaintext highlighter-rouge">lab3</code> based on our lab3 branch, <code class="language-plaintext highlighter-rouge">origin/lab3</code>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ cd ~/jos
+$ git add -A
+$ git commit -am 'changes to lab2 after handin'
+Created commit 734fab7: changes to lab2 after handin
+ 4 files changed, 42 insertions(+), 9 deletions(-)
+$ git pull
+Already up-to-date.
+$ git checkout -b lab3 origin/lab3
+Branch lab3 set up to track remote branch refs/remotes/origin/lab3.
+Switched to a new branch "lab3"
+$ git merge lab2
+Merge made by recursive.
+ kern/pmap.c |   42 +++++++++++++++++++
+ 1 files changed, 42 insertions(+), 0 deletions(-)
+$
+</code></pre></div></div>
+
+<p>Lab 3 contains a number of new source files, which you should browse:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    +---------+----------------+-------------------------+
+    |``inc/`` | ``env.h``      | Public definitions for  |
+    |         |                | user-mode environments  |
+    +---------+----------------+-------------------------+
+    |         | ``trap.h``     | Public definitions for  |
+    |         |                | trap handling           |
+    +---------+----------------+-------------------------+
+    |         | ``syscall.h``  | Public definitions for  |
+    |         |                | system calls from user  |
+    |         |                | environments to the     |
+    |         |                | kernel                  |
+    +---------+----------------+-------------------------+
+    |         | ``lib.h``      | Public definitions for  |
+    |         |                | the user-mode support   |
+    |         |                | library                 |
+    +---------+----------------+-------------------------+
+    |``kern/``| ``env.h``      | Kernel-private          |
+    |         |                | definitions for         |
+    |         |                | user-mode environments  |
+    +---------+----------------+-------------------------+
+    |         | ``env.c``      | Kernel code             |
+    |         |                | implementing user-mode  |
+    |         |                | environments            |
+    +---------+----------------+-------------------------+
+    |         | ``trap.h``     | Kernel-private trap     |
+    |         |                | handling definitions    |
+    +---------+----------------+-------------------------+
+    |         | ``trap.c``     | Trap handling code      |
+    +---------+----------------+-------------------------+
+    |         | ``trapentry.S``| Assembly-language trap  |
+    |         |                | handler entry-points    |
+    +---------+----------------+-------------------------+
+    |         | ``syscall.h``  | Kernel-private          |
+    |         |                | definitions for system  |
+    |         |                | call handling           |
+    +---------+----------------+-------------------------+
+    |         | ``syscall.c``  | System call             |
+    |         |                | implementation code     |
+    +---------+----------------+-------------------------+
+    |``lib/`` | ``Makefrag``   | Makefile fragment to    |
+    |         |                | build user-mode         |
+    |         |                | library,                |
+    |         |                | ``obj/lib/libuser.a``   |
+    +---------+----------------+-------------------------+
+    |         | ``entry.S``    | Assembly-language       |
+    |         |                | entry-point for user    |
+    |         |                | environments            |
+    +---------+----------------+-------------------------+
+    |         | ``libmain.c``  | User-mode library setup |
+    |         |                | code called from        |
+    |         |                | ``entry.S``             |
+    +---------+----------------+-------------------------+
+    |         | ``syscall.c``  | User-mode system call   |
+    |         |                | stub functions          |
+    +---------+----------------+-------------------------+
+    |         | ``console.c``  | User-mode               |
+    |         |                | implementations of      |
+    |         |                | ``putchar`` and         |
+    |         |                | ``getchar``, providing  |
+    |         |                | console I/O             |
+    +---------+----------------+-------------------------+
+    |         | ``exit.c``     | User-mode               |
+    |         |                | implementation of       |
+    |         |                | ``exit``                |
+    +---------+----------------+-------------------------+
+    |         | ``panic.c``    | User-mode               |
+    |         |                | implementation of       |
+    |         |                | ``panic``               |
+    +---------+----------------+-------------------------+
+    |``user/``| ``*``          | Various test programs   |
+    |         |                | to check kernel lab 3   |
+    |         |                | code                    |
+    +---------+----------------+-------------------------+
+</code></pre></div></div>
+
+<p>In addition, a number of the source files we handed out for lab2 are
+modified in lab3. To see the differences, you can type:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ git diff lab2
+</code></pre></div></div>
+
+<p>You may also want to take another look at the <a href="https://purs3lab.github.io/ee469/assignments/00_assignment">lab tools guide</a>,
+as it includes information on debugging
+user code that becomes relevant in this lab.</p>
+
+<h2 id="lab-requirements">Lab Requirements</h2>
+
+<p>This lab is divided into two parts, A and B. As in lab 2, you will need to do all of the regular exercises described
+in the lab and provide a write-up that briefly answers
+to the questions posed in the lab in a file called <code class="language-plaintext highlighter-rouge">answers-lab3.txt</code>
+in the top level of your <code class="language-plaintext highlighter-rouge">lab</code> directory.
+Do not forget to include the answer file in your submission
+with <code class="language-plaintext highlighter-rouge">git add answers-lab3.txt.</code></p>
+
+<h3 id="inline-assembly">Inline Assembly</h3>
+
+<p>In this lab you may find GCC’s inline assembly language feature useful,
+although it is also possible to complete the lab without using it. At
+the very least, you will need to be able to understand the fragments of
+inline assembly language (“<code class="language-plaintext highlighter-rouge">asm</code>\ “ statements) that already exist in
+the source code we gave you. You can find several sources of information
+on GCC inline assembly language on <a href="https://purs3lab.github.io/ee469/materials/">the reference page</a>.</p>
+
+<h1 id="part-a-user-environments-and-exception-handling">Part A: User Environments and Exception Handling</h1>
+
+<p>The new include file <code class="language-plaintext highlighter-rouge">inc/env.h</code> contains basic definitions for user
+environments in JOS. Read it now. The kernel uses the <code class="language-plaintext highlighter-rouge">Env</code> data
+structure to keep track of each user environment. In this lab you will
+initially create just one environment, but you will need to design the
+JOS kernel to support multiple environments; lab 4 will take advantage
+of this feature by allowing a user environment to <code class="language-plaintext highlighter-rouge">fork</code> other
+environments.</p>
+
+<p>As you can see in <code class="language-plaintext highlighter-rouge">kern/env.c</code>, the kernel maintains three main global
+variables pertaining to environments:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>struct Env *envs = NULL;           // All environments
+struct Env *curenv = NULL;         // The current env
+static struct Env *env_free_list;  // Free environment list
+</code></pre></div></div>
+
+<p>Once JOS gets up and running, the <code class="language-plaintext highlighter-rouge">envs</code> pointer points to an array of
+<code class="language-plaintext highlighter-rouge">Env</code> structures representing all the environments in the system. In
+our design, the JOS kernel will support a maximum of <code class="language-plaintext highlighter-rouge">NENV</code>
+simultaneously active environments, although there will typically be far
+fewer running environments at any given time. (<code class="language-plaintext highlighter-rouge">NENV</code> is a constant
+<code class="language-plaintext highlighter-rouge">#define</code>‘d in <code class="language-plaintext highlighter-rouge">inc/env.h</code>.) Once it is allocated, the <code class="language-plaintext highlighter-rouge">envs</code>
+array will contain a single instance of the <code class="language-plaintext highlighter-rouge">Env</code> data structure for
+each of the <code class="language-plaintext highlighter-rouge">NENV</code> possible environments.</p>
+
+<p>The JOS kernel keeps all of the inactive <code class="language-plaintext highlighter-rouge">Env</code> structures on the
+<code class="language-plaintext highlighter-rouge">env_free_list</code>. This design allows easy allocation and deallocation
+of environments, as they merely have to be added to or removed from the
+free list.</p>
+
+<p>The kernel uses the <code class="language-plaintext highlighter-rouge">curenv</code> symbol to keep track of the <em>currently
+executing</em> environment at any given time. During boot up, before the
+first environment is run, <code class="language-plaintext highlighter-rouge">curenv</code> is initially set to <code class="language-plaintext highlighter-rouge">NULL</code>.</p>
+
+<h2 id="environment-state">Environment State</h2>
+
+<p>The <code class="language-plaintext highlighter-rouge">Env</code> structure is defined in <code class="language-plaintext highlighter-rouge">inc/env.h</code> as follows (although
+more fields will be added in future labs):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>struct Env {
+    struct Trapframe env_tf;    // Saved registers
+    struct Env *env_link;       // Next free Env
+    envid_t env_id;             // Unique environment identifier
+    envid_t env_parent_id;      // env_id of this env's parent
+    enum EnvType env_type;      // Indicates special system environments
+    unsigned env_status;        // Status of the environment
+    uint32_t env_runs;          // Number of times environment has run
+
+    // Address space
+    pde_t *env_pgdir;           // Kernel virtual address of page dir
+};
+</code></pre></div></div>
+
+<p>Here’s what the <code class="language-plaintext highlighter-rouge">Env</code> fields are for:</p>
+
+<ul>
+  <li><strong>env_tf</strong>:
+This structure, defined in <code class="language-plaintext highlighter-rouge">inc/trap.h</code>, holds the saved register
+values for the environment while that environment is <em>not</em> running:
+i.e., when the kernel or a different environment is running. The
+kernel saves these when switching from user to kernel mode, so that
+the environment can later be resumed where it left off.</li>
+  <li><strong>env_link</strong>:
+This is a link to the next <code class="language-plaintext highlighter-rouge">Env</code> on the <code class="language-plaintext highlighter-rouge">env_free_list</code>.
+<code class="language-plaintext highlighter-rouge">env_free_list</code> points to the first free environment on the list.</li>
+  <li><strong>env_id</strong>:
+The kernel stores here a value that uniquely identifiers the
+environment currently using this <code class="language-plaintext highlighter-rouge">Env</code> structure (i.e., using this
+particular slot in the <code class="language-plaintext highlighter-rouge">envs</code> array). After a user environment
+terminates, the kernel may re-allocate the same <code class="language-plaintext highlighter-rouge">Env</code> structure to
+a different environment - but the new environment will have a
+different <code class="language-plaintext highlighter-rouge">env_id</code> from the old one even though the new
+environment is re-using the same slot in the <code class="language-plaintext highlighter-rouge">envs</code> array.</li>
+  <li><strong>env_parent_id</strong>:
+The kernel stores here the <code class="language-plaintext highlighter-rouge">env_id</code> of the environment that
+created this environment. In this way the environments can form a
+“family tree,” which will be useful for making security decisions
+about which environments are allowed to do what to whom.</li>
+  <li><strong>env_type</strong>:
+This is used to distinguish special environments. For most
+environments, it will be <code class="language-plaintext highlighter-rouge">ENV_TYPE_USER</code>. We’ll introduce a few
+more types for special system service environments in later labs.</li>
+  <li>
+    <p><strong>env_status</strong>:
+This variable holds one of the following values:</p>
+
+    <ul>
+      <li><code class="language-plaintext highlighter-rouge">ENV_FREE</code>:
+Indicates that the <code class="language-plaintext highlighter-rouge">Env</code> structure is inactive, and therefore
+on the <code class="language-plaintext highlighter-rouge">env_free_list</code>.</li>
+      <li><code class="language-plaintext highlighter-rouge">ENV_RUNNABLE</code>:
+Indicates that the <code class="language-plaintext highlighter-rouge">Env</code> structure represents an environment
+that is waiting to run on the processor.</li>
+      <li><code class="language-plaintext highlighter-rouge">ENV_RUNNING</code>:
+Indicates that the <code class="language-plaintext highlighter-rouge">Env</code> structure represents the currently
+running environment.</li>
+      <li><code class="language-plaintext highlighter-rouge">ENV_NOT_RUNNABLE</code>:
+Indicates that the <code class="language-plaintext highlighter-rouge">Env</code> structure represents a currently
+active environment, but it is not currently ready to run: for
+example, because it is waiting for an interprocess communication
+(IPC) from another environment.</li>
+      <li><code class="language-plaintext highlighter-rouge">ENV_DYING</code>:
+Indicates that the <code class="language-plaintext highlighter-rouge">Env</code> structure represents a zombie
+environment. A zombie environment will be freed the next time it
+traps to the kernel. We will not use this flag until Lab 4.</li>
+    </ul>
+  </li>
+  <li><strong>env_pgdir</strong>:
+This variable holds the kernel <em>virtual address</em> of this
+environment’s page directory.</li>
+</ul>
+
+<p>Like a Unix process, a JOS environment couples the concepts of “thread”
+and “address space”. The thread is defined primarily by the saved
+registers (the <code class="language-plaintext highlighter-rouge">env_tf</code> field), and the address space is defined by
+the page directory and page tables pointed to by <code class="language-plaintext highlighter-rouge">env_pgdir</code>. To run
+an environment, the kernel must set up the CPU with <em>both</em> the saved
+registers and the appropriate address space.</p>
+
+<p>Our <code class="language-plaintext highlighter-rouge">struct Env</code> is analogous to <code class="language-plaintext highlighter-rouge">struct proc</code> in xv6. Both
+structures hold the environment’s (i.e., process’s) user-mode register
+state in a <code class="language-plaintext highlighter-rouge">Trapframe</code> structure. In JOS, individual environments do
+not have their own kernel stacks as processes do in xv6. There can be
+only one JOS environment active in the kernel at a time, so JOS needs
+only a <em>single</em> kernel stack.</p>
+
+<h2 id="allocating-the-environments-array">Allocating the Environments Array</h2>
+
+<p>In lab 2, you allocated memory in <code class="language-plaintext highlighter-rouge">mem_init()</code> for the <code class="language-plaintext highlighter-rouge">pages[]</code>
+array, which is a table the kernel uses to keep track of which pages are
+free and which are not. You will now need to modify <code class="language-plaintext highlighter-rouge">mem_init()</code>
+further to allocate a similar array of <code class="language-plaintext highlighter-rouge">Env</code> structures, called
+<code class="language-plaintext highlighter-rouge">envs</code>.</p>
+
+<h2 id="exercise-1"><span style="color:blue">Exercise 1</span></h2>
+<blockquote>
+  <p>Modify <code class="language-plaintext highlighter-rouge">mem_init()</code> in <code class="language-plaintext highlighter-rouge">kern/pmap.c</code> to allocate and map
+the <code class="language-plaintext highlighter-rouge">envs</code> array. This array consists of exactly <code class="language-plaintext highlighter-rouge">NENV</code> instances of
+the <code class="language-plaintext highlighter-rouge">Env</code> structure allocated much like how you allocated the
+<code class="language-plaintext highlighter-rouge">pages</code> array. Also like the <code class="language-plaintext highlighter-rouge">pages</code> array, the memory backing
+<code class="language-plaintext highlighter-rouge">envs</code> should also be mapped user read-only at <code class="language-plaintext highlighter-rouge">UENVS</code> (defined in
+<code class="language-plaintext highlighter-rouge">inc/memlayout.h</code>) so user processes can read from this array.</p>
+</blockquote>
+
+<blockquote>
+  <p>You should run your code and make sure <code class="language-plaintext highlighter-rouge">check_kern_pgdir()</code> succeeds.</p>
+</blockquote>
+
+<blockquote>
+  <h3 id="watch-exercise-1">Watch <a href="https://cdnapisec.kaltura.com/html5/html5lib/v2.92/mwEmbedFrame.php/p/983291/uiconf_id/44472651/entry_id/1_bklm77g0?wid=_983291&amp;iframeembed=true&amp;playerId=kaltura_player&amp;entry_id=1_bklm77g0">Exercise 1</a></h3>
+</blockquote>
+
+<h2 id="creating-and-running-environments">Creating and Running Environments</h2>
+
+<p>You will now write the code in <code class="language-plaintext highlighter-rouge">kern/env.c</code> necessary to run a user
+environment. Because we do not yet have a filesystem, we will set up the
+kernel to load a static binary image that is <em>embedded within the kernel
+itself</em>. JOS embeds this binary in the kernel as a ELF executable image.</p>
+
+<p>The Lab 3 <code class="language-plaintext highlighter-rouge">Makefile</code> generates a number of binary images in the
+<code class="language-plaintext highlighter-rouge">obj/user/</code> directory. If you look at <code class="language-plaintext highlighter-rouge">kern/Makefrag</code>, you will
+notice some magic that “links” these binaries directly into the kernel
+executable as if they were <code class="language-plaintext highlighter-rouge">.o</code> files. The <code class="language-plaintext highlighter-rouge">-b binary</code> option on the
+linker command line causes these files to be linked in as “raw”
+uninterpreted binary files rather than as regular <code class="language-plaintext highlighter-rouge">.o</code> files produced
+by the compiler. (As far as the linker is concerned, these files do not
+have to be ELF images at all - they could be anything, such as text
+files or pictures!) If you look at <code class="language-plaintext highlighter-rouge">obj/kern/kernel.sym</code> after
+building the kernel, you will notice that the linker has “magically”
+produced a number of funny symbols with obscure names like
+<code class="language-plaintext highlighter-rouge">_binary_obj_user_hello_start</code>, <code class="language-plaintext highlighter-rouge">_binary_obj_user_hello_end</code>, and
+<code class="language-plaintext highlighter-rouge">_binary_obj_user_hello_size</code>. The linker generates these symbol names
+by mangling the file names of the binary files; the symbols provide the
+regular kernel code with a way to reference the embedded binary files.</p>
+
+<p>In <code class="language-plaintext highlighter-rouge">i386_init()</code> in <code class="language-plaintext highlighter-rouge">kern/init.c</code>, you’ll see code to run one of
+these binary images in an environment. However, the critical functions
+to set up user environments are not complete; you will need to fill them
+in.</p>
+
+<h2 id="exercise-2"><span style="color:blue">Exercise 2</span></h2>
+<blockquote>
+  <p>In the file <code class="language-plaintext highlighter-rouge">env.c</code>, finish coding the following functions:</p>
+</blockquote>
+
+<blockquote>
+  <ul>
+    <li><code class="language-plaintext highlighter-rouge">env_init()</code>
+  Initialize all of the <code class="language-plaintext highlighter-rouge">Env</code> structures in the <code class="language-plaintext highlighter-rouge">envs</code> array and
+  add them to the <code class="language-plaintext highlighter-rouge">env_free_list</code>. Also calls <code class="language-plaintext highlighter-rouge">env_init_percpu</code>,
+  which configures the segmentation hardware with separate segments
+  for privilege level 0 (kernel) and privilege level 3 (user).</li>
+    <li><code class="language-plaintext highlighter-rouge">env_setup_vm()</code>
+  Allocate a page directory for a new environment and initialize the
+  kernel portion of the new environment’s address space.</li>
+    <li><code class="language-plaintext highlighter-rouge">region_alloc()</code>
+  Allocates and maps physical memory for an environment</li>
+    <li><code class="language-plaintext highlighter-rouge">load_icode()</code>
+  You will need to parse an ELF binary image, much like the boot
+  loader already does, and load its contents into the user address
+  space of a new environment.</li>
+    <li><code class="language-plaintext highlighter-rouge">env_create()</code>
+  Allocate an environment with <code class="language-plaintext highlighter-rouge">env_alloc</code> and call <code class="language-plaintext highlighter-rouge">load_icode</code>
+  load an ELF binary into it.</li>
+    <li><code class="language-plaintext highlighter-rouge">env_run()</code>
+  Start a given environment running in user mode.</li>
+  </ul>
+</blockquote>
+
+<blockquote>
+  <p>As you write these functions, you might find the new cprintf verb <code class="language-plaintext highlighter-rouge">%e</code>
+useful – it prints a description corresponding to an error code. For
+example,</p>
+</blockquote>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>r = -E_NO_MEM;
+panic("env_alloc: %e", r);
+</code></pre></div></div>
+<blockquote>
+  <p>will panic with the message “env_alloc: out of memory”.</p>
+</blockquote>
+
+<blockquote>
+  <h3 id="watch-exercise-2">Watch <a href="https://cdnapisec.kaltura.com/html5/html5lib/v2.92/mwEmbedFrame.php/p/983291/uiconf_id/44472651/entry_id/1_bklm77g0?wid=_983291&amp;iframeembed=true&amp;playerId=kaltura_player&amp;entry_id=1_bklm77g0">Exercise 2</a></h3>
+</blockquote>
+
+<p>Below is a call graph of the code up to the point where the user code is
+invoked. Make sure you understand the purpose of each step.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>+--&gt; start (kern/entry.S)
++--&gt; i386_init (kern/init.c)
+    +--&gt; cons_init()
+    +--&gt; mem_init()
+    +--&gt; env_init()
+    +--&gt; trap_init() ; still incomplete at this point
+    +--&gt; env_create()
+    +--&gt; env_run()
+        +--&gt; env_pop_tf()
+</code></pre></div></div>
+
+<p>Once you are done you should compile your kernel and run it under QEMU.
+If all goes well, your system should enter user space and execute the
+<code class="language-plaintext highlighter-rouge">hello</code> binary until it makes a system call with the <code class="language-plaintext highlighter-rouge">int</code>
+instruction. At that point there will be trouble, since JOS has not set
+up the hardware to allow any kind of transition from user space into the
+kernel. When the CPU discovers that it is not set up to handle this
+system call interrupt, it will generate a general protection exception,
+find that it can’t handle that, generate a double fault exception, find
+that it can’t handle that either, and finally give up with what’s known
+as a “triple fault”. Usually, you would then see the CPU reset and the
+system reboot. While this is important for legacy applications (see
+<a href="https://en.wikipedia.org/wiki/Triple_fault">Wikipedia: Triple Fault</a>),
+it’s a pain for kernel development, so QEMU produces a dump of the
+virtual machine upon a triple fault for debugging purposes.</p>
+
+<p>We’ll address this problem shortly, but for now we can use the debugger
+to check that we’re entering user mode. Use <code class="language-plaintext highlighter-rouge">make qemu-gdb</code> and set a GDB
+breakpoint at <code class="language-plaintext highlighter-rouge">env_pop_tf()</code>, which should be the last function you hit
+before actually entering user mode. Single step through this function
+using <code class="language-plaintext highlighter-rouge">si</code>; the processor should enter user mode after the <code class="language-plaintext highlighter-rouge">iret</code>
+instruction. You should then see the first instruction in the user
+environment’s executable, which is the <code class="language-plaintext highlighter-rouge">cmpl</code> instruction at the label
+<code class="language-plaintext highlighter-rouge">start</code> in <code class="language-plaintext highlighter-rouge">lib/entry.S</code>. Now use b *0x… to set a breakpoint at
+the <code class="language-plaintext highlighter-rouge">int $0x30</code> in <code class="language-plaintext highlighter-rouge">sys_cputs()</code> in <code class="language-plaintext highlighter-rouge">hello</code>
+(see <code class="language-plaintext highlighter-rouge">obj/user/hello.asm</code> for the user-space address).
+This <code class="language-plaintext highlighter-rouge">int</code> is the
+system call to display a character to the console. If you cannot execute
+as far as the <code class="language-plaintext highlighter-rouge">int</code>, then something is wrong with your address space
+setup or program loading code; go back and fix it before continuing.</p>
+
+<h2 id="handling-interrupts-and-exceptions">Handling Interrupts and Exceptions</h2>
+
+<p>At this point, the first <code class="language-plaintext highlighter-rouge">int $0x30</code> system call instruction in user
+space is a dead end: once the processor gets into user mode, there is no
+way to get back out. You will now need to implement basic exception and
+system call handling, so that it is possible for the kernel to recover
+control of the processor from user-mode code. The first thing you should
+do is thoroughly familiarize yourself with the x86 interrupt and
+exception mechanism.</p>
+
+<h2 id="exercise-3"><span style="color:blue">Exercise 3</span></h2>
+<blockquote>
+  <p>Read Chapter 6, Interrupt and Exception Handling
+of the <a href="https://purs3lab.github.io/ee469/static_files/read/ia32/IA32-3A.pdf">IA-32 Developer’s Manual</a>,
+if you haven’t already.</p>
+</blockquote>
+
+<p>In this lab we generally follow Intel’s terminology for interrupts,
+exceptions, and the like. However, terms such as exception, trap,
+interrupt, fault and abort have no standard meaning across architectures
+or operating systems, and are often used without regard to the subtle
+distinctions between them on a particular architecture such as the x86.
+When you see these terms outside of this lab, the meanings might be
+slightly different.</p>
+
+<h2 id="basics-of-protected-control-transfer">Basics of Protected Control Transfer</h2>
+
+<p>Exceptions and interrupts are both “protected control transfers,” which
+cause the processor to switch from user to kernel mode (CPL=0) without
+giving the user-mode code any opportunity to interfere with the
+functioning of the kernel or other environments. In Intel’s terminology,
+an <em>interrupt</em> is a protected control transfer that is caused by an
+asynchronous event usually external to the processor, such as
+notification of external device I/O activity. An <em>exception</em>, in
+contrast, is a protected control transfer caused synchronously by the
+currently running code, for example due to a divide by zero or an
+invalid memory access.</p>
+
+<p>In order to ensure that these protected control transfers are actually
+<em>protected</em>, the processor’s interrupt/exception mechanism is designed
+so that the code currently running when the interrupt or exception
+occurs <em>does not get to choose arbitrarily where the kernel is entered
+or how</em>. Instead, the processor ensures that the kernel can be entered
+only under carefully controlled conditions. On the x86, two mechanisms
+work together to provide this protection:</p>
+
+<ol>
+  <li>
+    <p><strong>The Interrupt Descriptor Table.</strong> The processor ensures that
+interrupts and exceptions can only cause the kernel to be entered at
+a few specific, well-defined entry-points <em>determined by the kernel
+itself</em>, and not by the code running when the interrupt or exception
+is taken.</p>
+
+    <p>The x86 allows up to 256 different interrupt or exception entry
+points into the kernel, each with a different <em>interrupt vector</em>. A
+vector is a number between 0 and 255. An interrupt’s vector is
+determined by the source of the interrupt: different devices, error
+conditions, and application requests to the kernel generate
+interrupts with different vectors. The CPU uses the vector as an
+index into the processor’s <em>interrupt descriptor table</em> (IDT), which
+the kernel sets up in kernel-private memory, much like the GDT. From
+the appropriate entry in this table the processor loads:</p>
+
+    <ul>
+      <li>the value to load into the instruction pointer (<code class="language-plaintext highlighter-rouge">EIP</code>) register,
+pointing to the kernel code designated to handle that type of
+exception.</li>
+      <li>the value to load into the code segment (<code class="language-plaintext highlighter-rouge">CS</code>) register, which
+includes in bits 0-1 the privilege level at which the exception
+handler is to run. (In JOS, all exceptions are handled in kernel
+mode, privilege level 0.)</li>
+    </ul>
+  </li>
+  <li>
+    <p><strong>The Task State Segment.</strong> The processor needs a place to save the
+<em>old</em> processor state before the interrupt or exception occurred,
+such as the original values of <code class="language-plaintext highlighter-rouge">EIP</code> and <code class="language-plaintext highlighter-rouge">CS</code> before the
+processor invoked the exception handler, so that the exception
+handler can later restore that old state and resume the interrupted
+code from where it left off. But this save area for the old processor
+state must in turn be protected from unprivileged user-mode code;
+otherwise buggy or malicious user code could compromise the kernel.</p>
+
+    <p>For this reason, when an x86 processor takes an interrupt or trap
+that causes a privilege level change from user to kernel mode, it
+also switches to a stack in the kernel’s memory. A structure called
+the <em>task state segment</em> (TSS) specifies the segment selector and
+address where this stack lives. The processor pushes (on this new
+stack) <code class="language-plaintext highlighter-rouge">SS</code>, <code class="language-plaintext highlighter-rouge">ESP</code>, <code class="language-plaintext highlighter-rouge">EFLAGS</code>, <code class="language-plaintext highlighter-rouge">CS</code>, <code class="language-plaintext highlighter-rouge">EIP</code>, and an optional
+error code. Then it loads the <code class="language-plaintext highlighter-rouge">CS</code> and <code class="language-plaintext highlighter-rouge">EIP</code> from the interrupt
+descriptor, and sets the <code class="language-plaintext highlighter-rouge">ESP</code> and <code class="language-plaintext highlighter-rouge">SS</code> to refer to the new
+stack.</p>
+
+    <p>Although the TSS is large and can potentially serve a variety of
+purposes, JOS only uses it to define the kernel stack that the
+processor should switch to when it transfers from user to kernel
+mode. Since “kernel mode” in JOS is privilege level 0 on the x86, the
+processor uses the <code class="language-plaintext highlighter-rouge">ESP0</code> and <code class="language-plaintext highlighter-rouge">SS0</code> fields of the TSS to define
+the kernel stack when entering kernel mode. JOS doesn’t use any other
+TSS fields.</p>
+  </li>
+</ol>
+
+<h2 id="types-of-exceptions-and-interrupts">Types of Exceptions and Interrupts</h2>
+
+<p>All of the synchronous exceptions that the x86 processor can generate
+internally use interrupt vectors between 0 and 31, and therefore map to
+IDT entries 0-31. For example, a page fault always causes an exception
+through vector 14. Interrupt vectors greater than 31 are only used by
+<em>software interrupts</em>, which can be generated by the <code class="language-plaintext highlighter-rouge">int</code>
+instruction, or asynchronous <em>hardware interrupts</em>, caused by external
+devices when they need attention.</p>
+
+<p>In this section we will extend JOS to handle the internally generated
+x86 exceptions in vectors 0-31. In the next section we will make JOS
+handle software interrupt vector 48 (0x30), which JOS (fairly
+arbitrarily) uses as its system call interrupt vector. In Lab 4 we will
+extend JOS to handle externally generated hardware interrupts such as
+the clock interrupt.</p>
+
+<h2 id="an-example">An Example</h2>
+
+<p>Let’s put these pieces together and trace through an example. Let’s say
+the processor is executing code in a user environment and encounters a
+divide instruction that attempts to divide by zero.</p>
+
+<ol>
+  <li>The processor switches to the stack defined by the <code class="language-plaintext highlighter-rouge">SS0</code> and
+<code class="language-plaintext highlighter-rouge">ESP0</code> fields of the TSS, which in JOS will hold the values
+<code class="language-plaintext highlighter-rouge">GD_KD</code> and <code class="language-plaintext highlighter-rouge">KSTACKTOP</code>, respectively.</li>
+  <li>
+    <p>The processor pushes the exception parameters on the kernel stack,
+starting at address <code class="language-plaintext highlighter-rouge">KSTACKTOP</code>:</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+                         +--------------------+ KSTACKTOP
+                         | 0x00000 | old SS   |     " - 4
+                         |      old ESP       |     " - 8
+                         |     old EFLAGS     |     " - 12
+                         | 0x00000 | old CS   |     " - 16
+                         |      old EIP       |     " - 20 &lt;---- ESP
+                         +--------------------+
+
+</code></pre></div>    </div>
+  </li>
+  <li>Because we’re handling a divide error, which is interrupt vector 0 on
+the x86, the processor reads IDT entry 0 and sets <code class="language-plaintext highlighter-rouge">CS:EIP</code> to point
+to the handler function described by the entry.</li>
+  <li>The handler function takes control and handles the exception, for
+example by terminating the user environment.</li>
+</ol>
+
+<p>For certain types of x86 exceptions, in addition to the “standard” five
+words above, the processor pushes onto the stack another word containing
+an <em>error code</em>. The page fault exception, number 14, is an important
+example. See the 80386 manual to determine for which exception numbers
+the processor pushes an error code, and what the error code means in
+that case. When the processor pushes an error code, the stack would look
+as follows at the beginning of the exception handler when coming in from
+user mode:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+                         +--------------------+ KSTACKTOP
+                         | 0x00000 | old SS   |     " - 4
+                         |      old ESP       |     " - 8
+                         |     old EFLAGS     |     " - 12
+                         | 0x00000 | old CS   |     " - 16
+                         |      old EIP       |     " - 20
+                         |     error code     |     " - 24 &lt;---- ESP
+                         +--------------------+
+</code></pre></div></div>
+
+<h2 id="nested-exceptions-and-interrupts">Nested Exceptions and Interrupts</h2>
+
+<p>The processor can take exceptions and interrupts both from kernel and
+user mode. It is only when entering the kernel from user mode, however,
+that the x86 processor automatically switches stacks before pushing its
+old register state onto the stack and invoking the appropriate exception
+handler through the IDT. If the processor is <em>already</em> in kernel mode
+when the interrupt or exception occurs (the low 2 bits of the <code class="language-plaintext highlighter-rouge">CS</code>
+register are already zero), then the CPU just pushes more values on the
+same kernel stack. In this way, the kernel can gracefully handle <em>nested
+exceptions</em> caused by code within the kernel itself. This capability is
+an important tool in implementing protection, as we will see later in
+the section on system calls.</p>
+
+<p>If the processor is already in kernel mode and takes a nested exception,
+since it does not need to switch stacks, it does not save the old <code class="language-plaintext highlighter-rouge">SS</code>
+or <code class="language-plaintext highlighter-rouge">ESP</code> registers. For exception types that do not push an error
+code, the kernel stack therefore looks like the following on entry to
+the exception handler:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+                         +--------------------+ &lt;---- old ESP
+                         |     old EFLAGS     |     " - 4
+                         | 0x00000 | old CS   |     " - 8
+                         |      old EIP       |     " - 12
+                         +--------------------+
+
+</code></pre></div></div>
+
+<p>For exception types that push an error code, the processor pushes the
+error code immediately after the old <code class="language-plaintext highlighter-rouge">EIP</code>, as before.</p>
+
+<p>There is one important caveat to the processor’s nested exception
+capability. If the processor takes an exception while already in kernel
+mode, and <em>cannot push its old state onto the kernel stack</em> for any
+reason such as lack of stack space, then there is nothing the processor
+can do to recover, so it simply resets itself. Needless to say, the
+kernel should be designed so that this can’t happen.</p>
+
+<h2 id="setting-up-the-idt">Setting Up the IDT</h2>
+
+<p>You should now have the basic information you need in order to set up
+the IDT and handle exceptions in JOS. For now, you will set up the IDT
+to handle interrupt vectors 0-31 (the processor exceptions). We’ll
+handle system call interrupts later in this lab and add interrupts 32-47
+(the device IRQs) in a later lab.</p>
+
+<p>The header files <code class="language-plaintext highlighter-rouge">inc/trap.h</code> and <code class="language-plaintext highlighter-rouge">kern/trap.h</code> contain important
+definitions related to interrupts and exceptions that you will need to
+become familiar with. The file <code class="language-plaintext highlighter-rouge">kern/trap.h</code> contains definitions that
+are strictly private to the kernel, while <code class="language-plaintext highlighter-rouge">inc/trap.h</code> contains
+definitions that may also be useful to user-level programs and
+libraries.</p>
+
+<p>Note: Some of the exceptions in the range 0-31 are defined by Intel to
+be reserved. Since they will never be generated by the processor, it
+doesn’t really matter how you handle them. Do whatever you think is
+cleanest.</p>
+
+<p>The overall flow of control that you should achieve is depicted below:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+          IDT                   trapentry.S           trap.c
+
+    +----------------+
+    |   &amp;handler1    |---------&gt; handler1:       +--&gt; trap (struct Trapframe *tf)
+    |                |             // do stuff   |    {
+    |                |             call trap ----+      // handle the exception/interrupt
+    |                |             // ...             }
+    +----------------+
+    |   &amp;handler2    |--------&gt; handler2:
+    |                |            // do stuff
+    |                |            call trap
+    |                |            // ...
+    +----------------+
+           .
+           .
+           .
+    +----------------+
+    |   &amp;handlerX    |--------&gt; handlerX:
+    |                |             // do stuff
+    |                |             call trap
+    |                |             // ...
+    +----------------+
+</code></pre></div></div>
+
+<p>Each exception or interrupt should have its own handler in
+<code class="language-plaintext highlighter-rouge">trapentry.S</code> and <code class="language-plaintext highlighter-rouge">trap_init()</code> should initialize the IDT with the
+addresses of these handlers. Each of the handlers should build a
+<code class="language-plaintext highlighter-rouge">struct Trapframe</code> (see <code class="language-plaintext highlighter-rouge">inc/trap.h</code>) on the stack and call
+<code class="language-plaintext highlighter-rouge">trap()</code> (in <code class="language-plaintext highlighter-rouge">trap.c</code>) with a pointer to the Trapframe. <code class="language-plaintext highlighter-rouge">trap()</code>
+then handles the exception/interrupt or dispatches to a specific handler
+function.</p>
+
+<h2 id="exercise-4"><span style="color:blue">Exercise 4</span></h2>
+<blockquote>
+  <p>Edit <code class="language-plaintext highlighter-rouge">trapentry.S</code> and <code class="language-plaintext highlighter-rouge">trap.c</code> and implement the
+features described above. The macros <code class="language-plaintext highlighter-rouge">TRAPHANDLER</code> and
+<code class="language-plaintext highlighter-rouge">TRAPHANDLER_NOEC</code> in <code class="language-plaintext highlighter-rouge">trapentry.S</code> should help you, as well as the
+<code class="language-plaintext highlighter-rouge">T\_\*</code> defines in <code class="language-plaintext highlighter-rouge">inc/trap.h</code>. You will need to add an entry point in
+<code class="language-plaintext highlighter-rouge">trapentry.S</code> (using those macros) for each trap defined in
+<code class="language-plaintext highlighter-rouge">inc/trap.h</code>, and you’ll have to provide <code class="language-plaintext highlighter-rouge">_alltraps</code> which the
+<code class="language-plaintext highlighter-rouge">TRAPHANDLER</code> macros refer to. You will also need to modify
+<code class="language-plaintext highlighter-rouge">trap_init()</code> to initialize the <code class="language-plaintext highlighter-rouge">idt</code> to point to each of these
+entry points defined in <code class="language-plaintext highlighter-rouge">trapentry.S</code>; the <code class="language-plaintext highlighter-rouge">SETGATE</code> macro will be
+helpful here.</p>
+</blockquote>
+
+<blockquote>
+  <p>Your <code class="language-plaintext highlighter-rouge">_alltraps</code> should:</p>
+</blockquote>
+
+<blockquote>
+  <ol>
+    <li>push values to make the stack look like a struct Trapframe</li>
+    <li>load <code class="language-plaintext highlighter-rouge">GD_KD</code> into <code class="language-plaintext highlighter-rouge">%ds</code> and <code class="language-plaintext highlighter-rouge">%es</code></li>
+    <li><code class="language-plaintext highlighter-rouge">pushl %esp</code> to pass a pointer to the Trapframe as an argument to
+  trap()</li>
+    <li><code class="language-plaintext highlighter-rouge">call trap</code> (can <code class="language-plaintext highlighter-rouge">trap</code> ever return?)</li>
+  </ol>
+</blockquote>
+
+<blockquote>
+  <p>Consider using the <code class="language-plaintext highlighter-rouge">pushal</code> instruction; it fits nicely with the
+layout of the <code class="language-plaintext highlighter-rouge">struct Trapframe</code>.</p>
+</blockquote>
+
+<blockquote>
+  <p>Test your trap handling code using some of the test programs in the
+<code class="language-plaintext highlighter-rouge">user</code> directory that cause exceptions before making any system calls,
+such as <code class="language-plaintext highlighter-rouge">user/divzero</code>. You should be able to get make grade to
+succeed on the <code class="language-plaintext highlighter-rouge">divzero</code>, <code class="language-plaintext highlighter-rouge">softint</code>, and <code class="language-plaintext highlighter-rouge">badsegment</code> tests at
+this point.</p>
+</blockquote>
+
+<blockquote>
+  <p>Answer the following questions in your <code class="language-plaintext highlighter-rouge">answers-lab3.txt</code>:</p>
+</blockquote>
+
+<blockquote>
+  <ol>
+    <li>What is the purpose of having an individual handler function for each
+  exception/interrupt? (i.e., if all exceptions/interrupts were
+  delivered to the same handler, what feature that exists in the
+  current implementation could not be provided?)</li>
+    <li>Did you have to do anything to make the <code class="language-plaintext highlighter-rouge">user/softint</code> program
+  behave correctly? The grade script expects it to produce a general
+  protection fault (trap 13), but <code class="language-plaintext highlighter-rouge">softint</code>’s code says <code class="language-plaintext highlighter-rouge">int $14</code>.
+  <em>Why</em> should this produce interrupt vector 13? What happens if the
+  kernel actually allows <code class="language-plaintext highlighter-rouge">softint</code>’s <code class="language-plaintext highlighter-rouge">int $14</code> instruction to
+  invoke the kernel’s page fault handler (which is interrupt vector
+  14)?</li>
+  </ol>
+</blockquote>
+
+<blockquote>
+  <h3 id="watch-exercise-4">Watch <a href="https://www.youtube.com/watch?v=e7LMrcVVZYU">Exercise 4</a></h3>
+</blockquote>
+
+<p>This concludes part A of the lab. Please commit and push your progress
+before move on to part B.</p>
+
+<h1 id="part-b-page-faults-breakpoints-exceptions-and-system-calls">Part B: Page Faults, Breakpoints Exceptions, and System Calls</h1>
+
+<p>Now that your kernel has basic exception handling capabilities, you will
+refine it to provide important operating system primitives that depend
+on exception handling.</p>
+
+<h2 id="handling-page-faults">Handling Page Faults</h2>
+
+<p>The page fault exception, interrupt vector 14 (<code class="language-plaintext highlighter-rouge">T_PGFLT</code>), is a
+particularly important one that we will exercise heavily throughout this
+lab and the next. When the processor takes a page fault, it stores the
+linear (i.e., virtual) address that caused the fault in a special
+processor control register, <code class="language-plaintext highlighter-rouge">CR2</code>. In <code class="language-plaintext highlighter-rouge">trap.c</code> we have provided the
+beginnings of a special function, <code class="language-plaintext highlighter-rouge">page_fault_handler()</code>, to handle
+page fault exceptions.</p>
+
+<h2 id="exercise-5"><span style="color:blue">Exercise 5</span></h2>
+<blockquote>
+  <p>Modify <code class="language-plaintext highlighter-rouge">trap_dispatch()</code> to dispatch page fault exceptions
+to <code class="language-plaintext highlighter-rouge">page_fault_handler()</code>. You should now be able to get make grade to
+succeed on the <code class="language-plaintext highlighter-rouge">faultread</code>, <code class="language-plaintext highlighter-rouge">faultreadkernel</code>, <code class="language-plaintext highlighter-rouge">faultwrite</code>, and
+<code class="language-plaintext highlighter-rouge">faultwritekernel</code> tests. If any of them don’t work, figure out why
+and fix them. Remember that you can boot JOS into a particular user
+program using <code class="language-plaintext highlighter-rouge">make run-prog</code> (e.g., <code class="language-plaintext highlighter-rouge">make run-faultred</code>)
+or <code class="language-plaintext highlighter-rouge">make run-prog-gdb</code>.</p>
+</blockquote>
+
+<blockquote>
+  <h3 id="watch-exercise-5">Watch <a href="https://www.youtube.com/watch?v=e7LMrcVVZYU">Exercise 5</a></h3>
+</blockquote>
+
+<p>You will further refine the kernel’s page fault handling below, as you
+implement system calls.</p>
+
+<h2 id="the-breakpoint-exception">The Breakpoint Exception</h2>
+
+<p>The breakpoint exception, interrupt vector 3 (<code class="language-plaintext highlighter-rouge">T_BRKPT</code>), is normally
+used to allow debuggers to insert breakpoints in a program’s code by
+temporarily replacing the relevant program instruction with the special
+1-byte <code class="language-plaintext highlighter-rouge">int3</code> software interrupt instruction. In JOS we will abuse
+this exception slightly by turning it into a primitive pseudo-system
+call that any user environment can use to invoke the JOS kernel monitor.
+This usage is actually somewhat appropriate if we think of the JOS
+kernel monitor as a primitive debugger. The user-mode implementation of
+<code class="language-plaintext highlighter-rouge">panic()</code> in <code class="language-plaintext highlighter-rouge">lib/panic.c</code>, for example, performs an <code class="language-plaintext highlighter-rouge">int3</code> after
+displaying its panic message.</p>
+
+<h2 id="exercise-6"><span style="color:blue">Exercise 6</span></h2>
+<blockquote>
+  <p>Modify <code class="language-plaintext highlighter-rouge">trap_dispatch()</code> to make breakpoint exceptions
+invoke the kernel monitor. You should now be able to get make grade to
+succeed on the <code class="language-plaintext highlighter-rouge">breakpoint</code> test.</p>
+</blockquote>
+
+<blockquote>
+  <h3 id="watch-exercise-6">Watch <a href="https://www.youtube.com/watch?v=rsKG9pSGvtk">Exercise 6</a></h3>
+</blockquote>
+
+<h2 id="challenge-1-extra-credit-1"><span style="color:green">Challenge 1 (Extra Credit: 1%)</span></h2>
+<blockquote>
+  <p>Modify the JOS kernel monitor so that you can ‘continue’
+execution from the current location (e.g., after the <code class="language-plaintext highlighter-rouge">int3</code>, if the
+kernel monitor was invoked via the breakpoint exception), and so that
+you can single-step one instruction at a time. You will need to
+understand certain bits of the <code class="language-plaintext highlighter-rouge">EFLAGS</code> register in order to implement
+single-stepping (https://en.wikipedia.org/wiki/Trap_flag).</p>
+</blockquote>
+
+<blockquote>
+  <p>To get the 1% of extra credit, please implement the command <code class="language-plaintext highlighter-rouge">si</code>
+in your monitor.</p>
+</blockquote>
+
+<blockquote>
+  <p>Basically, what the command <code class="language-plaintext highlighter-rouge">si</code> does is, run one next instruction
+and trap back to the monitor. In other words,
+after your JOS getting trapped into the monitor via <code class="language-plaintext highlighter-rouge">int3</code>,
+running the command <code class="language-plaintext highlighter-rouge">si</code> should execute exactly one instruction,
+and after that, the execution must be trapped again to the monitor.</p>
+</blockquote>
+
+<blockquote>
+  <p>Optional: If you’re feeling really adventurous, find some x86
+disassembler source code - e.g., by ripping it out of QEMU, or out of
+GNU binutils, or just write it yourself - and extend the JOS kernel
+monitor to be able to disassemble and display instructions as you are
+stepping through them. Combined with the symbol table loading from lab
+2, this is the stuff of which real kernel debuggers are made.</p>
+</blockquote>
+
+<blockquote>
+  <ol>
+    <li>The break point test case will either generate a break point
+  exception or a general protection fault depending on how you
+  initialized the break point entry in the IDT (i.e., your call to
+  <code class="language-plaintext highlighter-rouge">SETGATE</code> from <code class="language-plaintext highlighter-rouge">trap_init</code>). Why? How do you need to set it up in
+  order to get the breakpoint exception to work as specified above and
+  what incorrect setup would cause it to trigger a general protection
+  fault?</li>
+    <li>What do you think is the point of these mechanisms, particularly in
+  light of what the <code class="language-plaintext highlighter-rouge">user/softint</code> test program does?</li>
+  </ol>
+</blockquote>
+
+<h2 id="system-calls">System calls</h2>
+
+<p>User processes ask the kernel to do things for them by invoking system
+calls. When the user process invokes a system call, the processor enters
+kernel mode, the processor and the kernel cooperate to save the user
+process’s state, the kernel executes appropriate code in order to carry
+out the system call, and then resumes the user process. The exact
+details of how the user process gets the kernel’s attention and how it
+specifies which call it wants to execute vary from system to system.</p>
+
+<p>In the JOS kernel, we will use the <code class="language-plaintext highlighter-rouge">int</code> instruction, which causes a
+processor interrupt. In particular, we will use <code class="language-plaintext highlighter-rouge">int $0x30</code> as the
+system call interrupt. We have defined the constant <code class="language-plaintext highlighter-rouge">T_SYSCALL</code> to 48
+(0x30) for you. You will have to set up the interrupt descriptor to
+allow user processes to cause that interrupt. Note that interrupt 0x30
+cannot be generated by hardware, so there is no ambiguity caused by
+allowing user code to generate it.</p>
+
+<p>The application will pass the system call number and the system call
+arguments in registers. This way, the kernel won’t need to grub around
+in the user environment’s stack or instruction stream. The system call
+number will go in <code class="language-plaintext highlighter-rouge">%eax</code>, and the arguments (up to five of them) will
+go in <code class="language-plaintext highlighter-rouge">%edx</code>, <code class="language-plaintext highlighter-rouge">%ecx</code>, <code class="language-plaintext highlighter-rouge">%ebx</code>, <code class="language-plaintext highlighter-rouge">%edi</code>, and <code class="language-plaintext highlighter-rouge">%esi</code>,
+respectively. The kernel passes the return value back in <code class="language-plaintext highlighter-rouge">%eax</code>. The
+assembly code to invoke a system call has been written for you, in
+<code class="language-plaintext highlighter-rouge">syscall()</code> in <code class="language-plaintext highlighter-rouge">lib/syscall.c</code>. You should read through it and make
+sure you understand what is going on.</p>
+
+<h2 id="exercise-7"><span style="color:blue">Exercise 7</span></h2>
+
+<blockquote>
+  <h3 id="watch-exercise-7">Watch <a href="https://www.youtube.com/watch?v=rsKG9pSGvtk">Exercise 7</a></h3>
+</blockquote>
+
+<blockquote>
+  <p>Add a handler in the kernel for interrupt vector
+<code class="language-plaintext highlighter-rouge">T_SYSCALL</code>. You will have to edit <code class="language-plaintext highlighter-rouge">kern/trapentry.S</code> and
+<code class="language-plaintext highlighter-rouge">kern/trap.c</code>’s <code class="language-plaintext highlighter-rouge">trap_init()</code>. You also need to change
+<code class="language-plaintext highlighter-rouge">trap_dispatch()</code> to handle the system call interrupt by calling
+<code class="language-plaintext highlighter-rouge">syscall()</code> (defined in <code class="language-plaintext highlighter-rouge">kern/syscall.c</code>) with the appropriate
+arguments, and then arranging for the return value to be passed back to
+the user process in <code class="language-plaintext highlighter-rouge">%eax</code>. Finally, you need to implement
+<code class="language-plaintext highlighter-rouge">syscall()</code> in <code class="language-plaintext highlighter-rouge">kern/syscall.c</code>. Make sure <code class="language-plaintext highlighter-rouge">syscall()</code> returns
+<code class="language-plaintext highlighter-rouge">-E_INVAL</code> if the system call number is invalid. You should read and
+understand <code class="language-plaintext highlighter-rouge">lib/syscall.c</code> (especially the inline assembly routine) in
+order to confirm your understanding of the system call interface. Handle
+all the systems calls listed in <code class="language-plaintext highlighter-rouge">inc/syscall.h</code> by invoking the
+corresponding kernel function for each call.</p>
+</blockquote>
+
+<blockquote>
+  <p>Run the <code class="language-plaintext highlighter-rouge">user/hello</code> program under your kernel (<code class="language-plaintext highlighter-rouge">make run-hello</code>). It
+should print “hello, world” on the console and then cause a page
+fault in user mode. If this does not happen, it probably means your
+system call handler isn’t quite right. You should also now be able to
+get <code class="language-plaintext highlighter-rouge">make grade</code> to succeed on the <code class="language-plaintext highlighter-rouge">testbss</code> test.</p>
+</blockquote>
+
+<h2 id="challenge-2-extra-credit-1"><span style="color:green">Challenge 2 (Extra Credit: 1%)</span></h2>
+<blockquote>
+  <p>Implement system calls using the <code class="language-plaintext highlighter-rouge">sysenter</code> and <code class="language-plaintext highlighter-rouge">sysexit</code>
+instructions instead of using <code class="language-plaintext highlighter-rouge">int 0x30</code> and <code class="language-plaintext highlighter-rouge">iret</code>.</p>
+</blockquote>
+
+<blockquote>
+  <p>The <code class="language-plaintext highlighter-rouge">sysenter/sysexit</code> instructions were designed by Intel to be
+faster than <code class="language-plaintext highlighter-rouge">int/iret</code>. They do this by using registers instead of the
+stack and by making assumptions about how the segmentation registers are
+used. The exact details of these instructions can be found in Volume 2B
+of the Intel reference manuals.</p>
+</blockquote>
+
+<blockquote>
+  <p>The easiest way to add support for these instructions in JOS is to add a
+<code class="language-plaintext highlighter-rouge">sysenter_handler</code> in <code class="language-plaintext highlighter-rouge">kern/trapentry.S</code> that saves enough
+information about the user environment to return to it, sets up the
+kernel environment, pushes the arguments to <code class="language-plaintext highlighter-rouge">syscall()</code> and calls
+<code class="language-plaintext highlighter-rouge">syscall()</code> directly. Once <code class="language-plaintext highlighter-rouge">syscall()</code> returns, set everything up
+for and execute the <code class="language-plaintext highlighter-rouge">sysexit</code> instruction. You will also need to add
+code to <code class="language-plaintext highlighter-rouge">kern/init.c</code> to set up the necessary model specific registers
+(MSRs). Section 6.1.2 in Volume 2 of the AMD Architecture Programmer’s
+Manual and the reference on SYSENTER in Volume 2B of the Intel reference
+manuals give good descriptions of the relevant MSRs. You can find an
+implementation of <code class="language-plaintext highlighter-rouge">wrmsr</code> to add to <code class="language-plaintext highlighter-rouge">inc/x86.h</code> for writing to these
+MSRs <a href="http://www.garloff.de/kurt/linux/k6mod.c">here</a>.</p>
+</blockquote>
+
+<blockquote>
+  <p>Finally, <code class="language-plaintext highlighter-rouge">lib/syscall.c</code> must be changed to support making a system
+call with <code class="language-plaintext highlighter-rouge">sysenter</code>. Here is a possible register layout for the
+<code class="language-plaintext highlighter-rouge">sysenter</code> instruction:</p>
+</blockquote>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        eax                - syscall number
+        edx, ecx, ebx, edi - arg1, arg2, arg3, arg4
+        esi                - return pc
+        ebp                - return esp
+        esp                - trashed by sysenter
+</code></pre></div></div>
+
+<blockquote>
+  <p>GCC’s inline assembler will automatically save registers that you tell
+it to load values directly into. Don’t forget to either save (push) and
+restore (pop) other registers that you clobber, or tell the inline
+assembler that you’re clobbering them. The inline assembler doesn’t
+support saving <code class="language-plaintext highlighter-rouge">%ebp</code>, so you will need to add code to save and
+restore it yourself. The return address can be put into <code class="language-plaintext highlighter-rouge">%esi</code> by
+using an instruction like <code class="language-plaintext highlighter-rouge">leal after_sysenter_label, %%esi</code>.</p>
+</blockquote>
+
+<blockquote>
+  <p>Note that this only supports 4 arguments, so you will need to leave the
+old method of doing system calls around to support 5 argument system
+calls. Furthermore, because this fast path doesn’t update the current
+environment’s trap frame, it won’t be suitable for some of the system
+calls we add in later labs.</p>
+</blockquote>
+
+<blockquote>
+  <p>You may have to revisit your code once we enable asynchronous interrupts
+in the next lab. Specifically, you’ll need to enable interrupts when
+returning to the user process, which <code class="language-plaintext highlighter-rouge">sysexit</code> doesn’t do for you.</p>
+</blockquote>
+
+<h2 id="user-mode-startup">User-mode startup</h2>
+
+<p>A user program starts running at the top of <code class="language-plaintext highlighter-rouge">lib/entry.S</code>. After some
+setup, this code calls <code class="language-plaintext highlighter-rouge">libmain()</code>, in <code class="language-plaintext highlighter-rouge">lib/libmain.c</code>. You should
+modify <code class="language-plaintext highlighter-rouge">libmain()</code> to initialize the global pointer <code class="language-plaintext highlighter-rouge">thisenv</code> to
+point at this environment’s <code class="language-plaintext highlighter-rouge">struct Env</code> in the <code class="language-plaintext highlighter-rouge">envs[]</code> array.
+(Note that <code class="language-plaintext highlighter-rouge">lib/entry.S</code> has already defined <code class="language-plaintext highlighter-rouge">envs</code> to point at the
+<code class="language-plaintext highlighter-rouge">UENVS</code> mapping you set up in Part A.) Hint: look in <code class="language-plaintext highlighter-rouge">inc/env.h</code> and
+use <code class="language-plaintext highlighter-rouge">sys_getenvid()</code>.</p>
+
+<p><code class="language-plaintext highlighter-rouge">libmain()</code> then calls <code class="language-plaintext highlighter-rouge">umain()</code>, which, in the case of the <code class="language-plaintext highlighter-rouge">hello</code>
+program, is in <code class="language-plaintext highlighter-rouge">user/hello.c</code>. Note that after printing
+“hello, world”, it tries to access <code class="language-plaintext highlighter-rouge">thisenv-&gt;env_id</code>. This is
+why it faulted earlier. Now that you’ve initialized <code class="language-plaintext highlighter-rouge">thisenv</code>
+properly, it should not fault. If it still faults, you probably haven’t
+mapped the <code class="language-plaintext highlighter-rouge">UENVS</code> area user-readable (back in Part A in <code class="language-plaintext highlighter-rouge">kern/pmap.c</code>;
+this is the first time we’ve actually used the <code class="language-plaintext highlighter-rouge">UENVS</code> area).</p>
+
+<h2 id="exercise-8"><span style="color:blue">Exercise 8</span></h2>
+<blockquote>
+  <p>Add the required code to the user library, then boot your
+kernel. You should see <code class="language-plaintext highlighter-rouge">user/hello</code> print “hello, world” and
+then print “i am environment 00001000”. <code class="language-plaintext highlighter-rouge">user/hello</code> then
+attempts to “exit” by calling <code class="language-plaintext highlighter-rouge">sys_env_destroy()</code> (see
+<code class="language-plaintext highlighter-rouge">lib/libmain.c</code> and <code class="language-plaintext highlighter-rouge">lib/exit.c</code>). Since the kernel currently only
+supports one user environment, it should report that it has destroyed
+the only environment and then drop into the kernel monitor. You should
+be able to get make grade to succeed on the <code class="language-plaintext highlighter-rouge">hello</code> test.</p>
+</blockquote>
+
+<blockquote>
+  <h3 id="watch-exercise-8">Watch <a href="https://www.youtube.com/watch?v=ARxQsrve47g">Exercise 8</a></h3>
+</blockquote>
+
+<h2 id="page-faults-and-memory-protection">Page faults and memory protection</h2>
+
+<p>Memory protection is a crucial feature of an operating system, ensuring
+that bugs in one program cannot corrupt other programs or corrupt the
+operating system itself.</p>
+
+<p>Operating systems usually rely on hardware support to implement memory
+protection. The OS keeps the hardware informed about which virtual
+addresses are valid and which are not. When a program tries to access an
+invalid address or one for which it has no permissions, the processor
+stops the program at the instruction causing the fault and then traps
+into the kernel with information about the attempted operation. If the
+fault is fixable, the kernel can fix it and let the program continue
+running. If the fault is not fixable, then the program cannot continue,
+since it will never get past the instruction causing the fault.</p>
+
+<p>As an example of a fixable fault, consider an automatically extended
+stack. In many systems the kernel initially allocates a single stack
+page, and then if a program faults accessing pages further down the
+stack, the kernel will allocate those pages automatically and let the
+program continue. By doing this, the kernel only allocates as much stack
+memory as the program needs, but the program can work under the illusion
+that it has an arbitrarily large stack.</p>
+
+<p>System calls present an interesting problem for memory protection. Most
+system call interfaces let user programs pass pointers to the kernel.
+These pointers point at user buffers to be read or written. The kernel
+then dereferences these pointers while carrying out the system call.
+There are two problems with this:</p>
+
+<ol>
+  <li>A page fault in the kernel is potentially a lot more serious than a
+page fault in a user program. If the kernel page-faults while
+manipulating its own data structures, that’s a kernel bug, and the
+fault handler should panic the kernel (and hence the whole system).
+But when the kernel is dereferencing pointers given to it by the user
+program, it needs a way to remember that any page faults these
+dereferences cause are actually on behalf of the user program.</li>
+  <li>The kernel typically has more memory permissions than the user
+program. The user program might pass a pointer to a system call that
+points to memory that the kernel can read or write but that the
+program cannot. The kernel must be careful not to be tricked into
+dereferencing such a pointer, since that might reveal private
+information or destroy the integrity of the kernel.</li>
+</ol>
+
+<p>For both of these reasons the kernel must be extremely careful when
+handling pointers presented by user programs.</p>
+
+<p>You will now solve these two problems with a single mechanism that
+scrutinizes all pointers passed from userspace into the kernel. When a
+program passes the kernel a pointer, the kernel will check that the
+address is in the user part of the address space, and that the page
+table would allow the memory operation.</p>
+
+<p>Thus, the kernel will never suffer a page fault due to dereferencing a
+user-supplied pointer. If the kernel does page fault, it should panic
+and terminate.</p>
+
+<h2 id="exercise-9"><span style="color:blue">Exercise 9</span></h2>
+<blockquote>
+  <p>Change <code class="language-plaintext highlighter-rouge">kern/trap.c</code> to panic if a page fault happens in
+kernel mode.</p>
+</blockquote>
+
+<blockquote>
+  <p>Hint: to determine whether a fault happened in user mode or in kernel
+mode, check the low bits of the <code class="language-plaintext highlighter-rouge">tf_cs</code>.</p>
+</blockquote>
+
+<blockquote>
+  <p>Read <code class="language-plaintext highlighter-rouge">user_mem_assert()</code> in <code class="language-plaintext highlighter-rouge">kern/pmap.c</code> and implement
+<code class="language-plaintext highlighter-rouge">user_mem_check()</code> in that same file.</p>
+</blockquote>
+
+<blockquote>
+  <p>Change <code class="language-plaintext highlighter-rouge">kern/syscall.c</code> to sanity check arguments to system calls.</p>
+</blockquote>
+
+<blockquote>
+  <p>Boot your kernel, running <code class="language-plaintext highlighter-rouge">user/buggyhello</code>. The environment should be
+destroyed, and the kernel should <em>not</em> panic. You should see:</p>
+</blockquote>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+    [00001000] user_mem_check assertion failure for va 00000001
+    [00001000] free env 00001000
+    Destroyed the only environment - nothing more to do!
+</code></pre></div></div>
+
+<blockquote>
+  <p>Finally, change <code class="language-plaintext highlighter-rouge">debuginfo_eip()</code> in <code class="language-plaintext highlighter-rouge">kern/kdebug.c</code> to call
+<code class="language-plaintext highlighter-rouge">user_mem_check()</code> on <code class="language-plaintext highlighter-rouge">usd</code>, <code class="language-plaintext highlighter-rouge">stabs</code>, and <code class="language-plaintext highlighter-rouge">stabstr</code>. If you now
+run <code class="language-plaintext highlighter-rouge">user/breakpoint</code>, you should be able to run backtrace from the
+kernel monitor and see the backtrace traverse into <code class="language-plaintext highlighter-rouge">lib/libmain.c</code>
+before the kernel panics with a page fault. What causes this page fault?
+You don’t need to fix it, but you should understand why it happens.</p>
+</blockquote>
+
+<blockquote>
+  <h3 id="watch-exercise-9">Watch <a href="https://www.youtube.com/watch?v=ARxQsrve47g">Exercise 9</a></h3>
+</blockquote>
+
+<p>Note that the same mechanism you just implemented also works for
+malicious user applications (such as <code class="language-plaintext highlighter-rouge">user/evilhello</code>).</p>
+
+<h2 id="exercise-10"><span style="color:blue">Exercise 10</span></h2>
+<blockquote>
+  <p>Boot your kernel, running <code class="language-plaintext highlighter-rouge">user/evilhello</code>. The
+environment should be destroyed, and the kernel should not panic. You
+should see:</p>
+</blockquote>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+    [00000000] new env 00001000
+    [00001000] user_mem_check assertion failure for va f010000c
+    [00001000] free env 00001000
+</code></pre></div></div>
+
+<blockquote>
+  <h3 id="watch-exercise-10">Watch <a href="https://www.youtube.com/watch?v=ARxQsrve47g">Exercise 10</a></h3>
+</blockquote>
+
+<p><strong>This completes the lab.</strong> Make sure you pass all of the make grade
+tests and don’t forget to write up your answers to the questions in
+<code class="language-plaintext highlighter-rouge">answers-lab3.txt</code>.</p>
+
+<p>Commit your changes (including adding <code class="language-plaintext highlighter-rouge">answers-lab3.txt</code>) and
+type <strong>make handin</strong> in the lab directory to hand in your lab.</p>
+
+<p>For those who finished extra-credit challenges, please do not forget to
+include the file with name <code class="language-plaintext highlighter-rouge">.lab3-extra-1</code> or <code class="language-plaintext highlighter-rouge">.lab3-extra-2</code>
+to indicate that you finished the extra credit challenge 1 or challenge 2
+respectively.</p>
+
+  </article>
+
+</div>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+<!--     <h2 class="footer-heading">Purdue University</h2> -->
+         <div class="footer-col-wrapper">
+      <div class="footer-col  footer-col-1">
+ 
+
+         <p class="text">
+Elmore Family School of Electrical and Computer Engineering<br>
+Purdue University<br>
+West Lafayette, IN, USA<br>
+
+      </p></div>
+
+      <div class="footer-col  footer-col-2">
+       <ul class="social-media-list">
+     
+
+          
+
+          
+  <li>
+    <a href="https://twitter.com/machiry_msidc">
+      <i class="fab fa-twitter" style="color:gray"></i> machiry_msidc
+    </a>
+  </li>
+
+
+          
+
+          
+
+          
+  <li>
+    <a href="https://engineering.purdue.edu/ECE">
+      <i class="fas fa-globe" style="color:gray"></i> engineering.purdue.edu/ECE
+    </a>
+  </li>
+
+
+
+
+       
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+  
+
+
+</body></html>
+<!-- d.s.m.s.050600.062508.030515.080516.030818 | "Baby, I'm Yours" -->
