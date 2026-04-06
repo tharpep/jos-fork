@@ -86,6 +86,7 @@ sys_exofork(void)
 	// will appear to return 0.
 
 	// LAB 4: Your code here.
+	// LLM-Assisted code
 	panic("sys_exofork not implemented");
 }
 
@@ -106,6 +107,7 @@ sys_env_set_status(envid_t envid, int status)
 	// envid's status.
 
 	// LAB 4: Your code here.
+	// LLM-Assisted code
 	panic("sys_env_set_status not implemented");
 }
 
@@ -121,6 +123,7 @@ static int
 sys_env_set_pgfault_upcall(envid_t envid, void *func)
 {
 	// LAB 4: Your code here.
+	// llm-Assisted code
 	panic("sys_env_set_pgfault_upcall not implemented");
 }
 
@@ -151,6 +154,7 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 	//   allocated!
 
 	// LAB 4: Your code here.
+	// LLM-Assisted code
 	panic("sys_page_alloc not implemented");
 }
 
@@ -182,6 +186,7 @@ sys_page_map(envid_t srcenvid, void *srcva,
 	//   check the current permissions on the page.
 
 	// LAB 4: Your code here.
+	// llm-Assisted code
 	panic("sys_page_map not implemented");
 }
 
@@ -198,6 +203,7 @@ sys_page_unmap(envid_t envid, void *va)
 	// Hint: This function is a wrapper around page_remove().
 
 	// LAB 4: Your code here.
+	// LLM-Assisted code
 	panic("sys_page_unmap not implemented");
 }
 
@@ -243,6 +249,7 @@ static int
 sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 {
 	// LAB 4: Your code here.
+	// llm-Assisted code
 	panic("sys_ipc_try_send not implemented");
 }
 
@@ -261,6 +268,7 @@ static int
 sys_ipc_recv(void *dstva)
 {
 	// LAB 4: Your code here.
+	// llm-Assisted code
 	panic("sys_ipc_recv not implemented");
 	return 0;
 }
@@ -283,6 +291,9 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 		return sys_getenvid();
 	case SYS_env_destroy:
 		return sys_env_destroy(a1);
+	case SYS_yield:
+		sys_yield();
+		return 0;
 	default:
 		return -E_INVAL;
 	}
