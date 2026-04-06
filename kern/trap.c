@@ -391,6 +391,35 @@ page_fault_handler(struct Trapframe *tf)
 
 	// LAB 4: Your code here.
 	// LLM-Assisted code
+	if (curenv->env_pgfault_upcall) {
+		struct UTrapframe *utf;
+		uintptr_t stacktop;
+
+		// Determine where to place the UTrapframe
+		if (tf->tf_esp >= UXSTACKTOP - PGSIZE && tf->tf_esp < UXSTACKTOP) {
+			// Recursive fault: leave 4-byte scratch word
+			stacktop = tf->tf_esp - sizeof(uint32_t) - sizeof(struct UTrapframe);
+		} else {
+			stacktop = UXSTACKTOP - sizeof(struct UTrapframe);
+		}
+
+		// Check the user can write to the exception stack
+		user_mem_assert(curenv, (void *) stacktop, sizeof(struct UTrapframe), PTE_W);
+
+		// Set up the UTrapframe
+		utf = (struct UTrapframe *) stacktop;
+		utf->utf_fault_va = fault_va;
+		utf->utf_err = tf->tf_err;
+		utf->utf_regs = tf->tf_regs;
+		utf->utf_eip = tf->tf_eip;
+		utf->utf_eflags = tf->tf_eflags;
+		utf->utf_esp = tf->tf_esp;
+
+		// Run the page fault handler on the exception stack
+		tf->tf_eip = (uintptr_t) curenv->env_pgfault_upcall;
+		tf->tf_esp = stacktop;
+		env_run(curenv);
+	}
 
 	// Destroy the environment that caused the fault.
 	cprintf("[%08x] user fault va %08x ip %08x\n",
