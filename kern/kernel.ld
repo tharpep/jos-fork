@@ -43,10 +43,9 @@ SECTIONS
 	. = ALIGN(0x1000);
 
 	/* The data segment */
-	.data : AT(0x100000 + (ADDR(.data) - 0xF0100000)) {
+	.data : {
 		*(.data .data.*)
 	}
-
 
 	.bss : {
 		PROVIDE(edata = .);

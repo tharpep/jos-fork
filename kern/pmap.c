@@ -263,7 +263,7 @@ mem_init(void)
 	check_page_installed_pgdir();
 
 	// Hidden test cases
-	// hidden_test_cases();
+	hidden_test_cases();
 }
 
 // Modify mappings in kern_pgdir to support SMP
