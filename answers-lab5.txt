@@ -1,0 +1,12 @@
+Question 1:
+No, nothing else needs to be done. The IOPL bits live in EFLAGS, and EFLAGS
+is part of the Trapframe that gets saved and restored on every context
+switch. When an environment traps into the kernel, the hardware pushes
+EFLAGS onto the kernel stack as part of the trap, and _alltraps in
+trapentry.S folds it into the Trapframe that ends up in curenv->env_tf.
+On the way back out, env_pop_tf uses iret, which pops EFLAGS back into the
+register, restoring whatever IOPL that environment had. So once we set
+FL_IOPL_3 on the FS environment's initial tf_eflags in env_create, that
+setting just rides along through every trap and switch with no extra work.
+Other environments, which never had IOPL set, similarly keep IOPL=0 across
+switches for the same reason.
