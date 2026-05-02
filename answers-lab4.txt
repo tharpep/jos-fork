@@ -1,0 +1,34 @@
+Question 1:
+MPBOOTPHYS converts a symbol's link address to its
+physical address at MPENTRY_PADDR. This is necessary because AP processors
+start in real mode with no paging enabled, so they can only access physical
+addresses. kern/mpentry.S is compiled and linked at high addresses like the
+rest of the kernel, but executes at the low physical address where boot_aps()
+copied it. boot/boot.S does not need this because the bootloader's link
+address and load address are both low.
+
+
+
+Question 2:
+Even with the big kernel lock, each CPU needs its own kernel stack because
+an interrupt or trap can push state onto the kernel stack before the CPU has
+a chance to acquire the lock. If CPUs shared a single stack, these concurrent
+pushes would corrupt each other's trap frames, even though only one CPU proceeds
+into the kernel at a time.
+
+Question 3a:
+The pointer e can be dereferenced both before and after lcr3() because all
+environments' page directories map the kernel identically above UTOP. The
+variable e points into the envs[] array, which is in kernel memory. 
+Since every environment's page directory contains the same kernel mappings,
+switching cr3 from one environment's page directory to another doesn't change
+the virtual-to-physical mapping for kernel addresses.
+
+Question 3b:
+The old environment's registers must be saved so that when the kernel
+schedules it again later, it can resume exactly where it left off. This
+happens automatically in the trap entry path: when the environment traps
+into the kernel, the hardware pushes SS, ESP, EFLAGS, CS, EIP onto the
+kernel stack, and _alltraps in trapentry.S pushes the other
+general-purpose registers plus DS and ES, forming a  Trapframe
+that is saved in curenv->env_tf.

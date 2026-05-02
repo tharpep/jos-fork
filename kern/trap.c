@@ -68,6 +68,44 @@ static const char *trapname(int trapno)
 
 // XYZ: write a function declaration here...
 // e.g., void t_divide();
+// LLM-Assisted code
+void handler0();
+void handler1();
+void handler2();
+void handler3();
+void handler4();
+void handler5();
+void handler6();
+void handler7();
+void handler8();
+void handler9();
+void handler10();
+void handler11();
+void handler12();
+void handler13();
+void handler14();
+void handler15();
+void handler16();
+void handler17();
+void handler18();
+void handler19();
+void handler48();
+void handler32();
+void handler33();
+void handler34();
+void handler35();
+void handler36();
+void handler37();
+void handler38();
+void handler39();
+void handler40();
+void handler41();
+void handler42();
+void handler43();
+void handler44();
+void handler45();
+void handler46();
+void handler47();
 
 void
 trap_init(void)
@@ -84,6 +122,46 @@ trap_init(void)
      *
      */
 	// LAB 3: Your code here.
+	// LLM-Assisted code
+	SETGATE(idt[T_DIVIDE],  0, GD_KT, handler0,  0);
+	SETGATE(idt[T_DEBUG],   0, GD_KT, handler1,  0);
+	SETGATE(idt[T_NMI],     0, GD_KT, handler2,  0);
+	SETGATE(idt[T_BRKPT],   0, GD_KT, handler3,  3);
+	SETGATE(idt[T_OFLOW],   0, GD_KT, handler4,  0);
+	SETGATE(idt[T_BOUND],   0, GD_KT, handler5,  0);
+	SETGATE(idt[T_ILLOP],   0, GD_KT, handler6,  0);
+	SETGATE(idt[T_DEVICE],  0, GD_KT, handler7,  0);
+	SETGATE(idt[T_DBLFLT],  0, GD_KT, handler8,  0);
+	SETGATE(idt[9],         0, GD_KT, handler9,  0);
+	SETGATE(idt[T_TSS],     0, GD_KT, handler10, 0);
+	SETGATE(idt[T_SEGNP],   0, GD_KT, handler11, 0);
+	SETGATE(idt[T_STACK],   0, GD_KT, handler12, 0);
+	SETGATE(idt[T_GPFLT],   0, GD_KT, handler13, 0);
+	SETGATE(idt[T_PGFLT],   0, GD_KT, handler14, 0);
+	SETGATE(idt[15],        0, GD_KT, handler15, 0);
+	SETGATE(idt[T_FPERR],   0, GD_KT, handler16, 0);
+	SETGATE(idt[T_ALIGN],   0, GD_KT, handler17, 0);
+	SETGATE(idt[T_MCHK],    0, GD_KT, handler18, 0);
+	SETGATE(idt[T_SIMDERR], 0, GD_KT, handler19, 0);
+	SETGATE(idt[T_SYSCALL], 0, GD_KT, handler48, 3);
+
+	// IRQ handlers (LAB 4)
+	SETGATE(idt[IRQ_OFFSET + 0],  0, GD_KT, handler32, 0);
+	SETGATE(idt[IRQ_OFFSET + 1],  0, GD_KT, handler33, 0);
+	SETGATE(idt[IRQ_OFFSET + 2],  0, GD_KT, handler34, 0);
+	SETGATE(idt[IRQ_OFFSET + 3],  0, GD_KT, handler35, 0);
+	SETGATE(idt[IRQ_OFFSET + 4],  0, GD_KT, handler36, 0);
+	SETGATE(idt[IRQ_OFFSET + 5],  0, GD_KT, handler37, 0);
+	SETGATE(idt[IRQ_OFFSET + 6],  0, GD_KT, handler38, 0);
+	SETGATE(idt[IRQ_OFFSET + 7],  0, GD_KT, handler39, 0);
+	SETGATE(idt[IRQ_OFFSET + 8],  0, GD_KT, handler40, 0);
+	SETGATE(idt[IRQ_OFFSET + 9],  0, GD_KT, handler41, 0);
+	SETGATE(idt[IRQ_OFFSET + 10], 0, GD_KT, handler42, 0);
+	SETGATE(idt[IRQ_OFFSET + 11], 0, GD_KT, handler43, 0);
+	SETGATE(idt[IRQ_OFFSET + 12], 0, GD_KT, handler44, 0);
+	SETGATE(idt[IRQ_OFFSET + 13], 0, GD_KT, handler45, 0);
+	SETGATE(idt[IRQ_OFFSET + 14], 0, GD_KT, handler46, 0);
+	SETGATE(idt[IRQ_OFFSET + 15], 0, GD_KT, handler47, 0);
 
 	// Per-CPU setup
 	trap_init_percpu();
@@ -117,21 +195,23 @@ trap_init_percpu(void)
 	// user space on that CPU.
 	//
 	// LAB 4: Your code here:
+	// LLM-Assisted code
+	int i = thiscpu->cpu_id;
 
 	// Setup a TSS so that we get the right stack
 	// when we trap to the kernel.
-	ts.ts_esp0 = KSTACKTOP;
-	ts.ts_ss0 = GD_KD;
-	ts.ts_iomb = sizeof(struct Taskstate);
+	thiscpu->cpu_ts.ts_esp0 = KSTACKTOP - i * (KSTKSIZE + KSTKGAP);
+	thiscpu->cpu_ts.ts_ss0 = GD_KD;
+	thiscpu->cpu_ts.ts_iomb = sizeof(struct Taskstate);
 
 	// Initialize the TSS slot of the gdt.
-	gdt[GD_TSS0 >> 3] = SEG16(STS_T32A, (uint32_t) (&ts),
+	gdt[(GD_TSS0 >> 3) + i] = SEG16(STS_T32A, (uint32_t) (&thiscpu->cpu_ts),
 					sizeof(struct Taskstate) - 1, 0);
-	gdt[GD_TSS0 >> 3].sd_s = 0;
+	gdt[(GD_TSS0 >> 3) + i].sd_s = 0;
 
 	// Load the TSS selector (like other segment selectors, the
 	// bottom three bits are special; we leave them 0)
-	ltr(GD_TSS0);
+	ltr(GD_TSS0 + (i << 3));
 
 	// Load the IDT
 	lidt(&idt_pd);
@@ -188,6 +268,27 @@ trap_dispatch(struct Trapframe *tf)
 {
 	// Handle processor exceptions.
 	// LAB 3: Your code here.
+	// LLM-Assisted code
+	if (tf->tf_trapno == T_PGFLT) {
+		page_fault_handler(tf);
+		return;
+	}
+
+	if (tf->tf_trapno == T_BRKPT) {
+		monitor(tf);
+		return;
+	}
+
+	if (tf->tf_trapno == T_SYSCALL) {
+		tf->tf_regs.reg_eax = syscall(
+			tf->tf_regs.reg_eax,
+			tf->tf_regs.reg_edx,
+			tf->tf_regs.reg_ecx,
+			tf->tf_regs.reg_ebx,
+			tf->tf_regs.reg_edi,
+			tf->tf_regs.reg_esi);
+		return;
+	}
 
 	// Handle spurious interrupts
 	// The hardware sometimes raises these because of noise on the
@@ -201,6 +302,12 @@ trap_dispatch(struct Trapframe *tf)
 	// Handle clock interrupts. Don't forget to acknowledge the
 	// interrupt using lapic_eoi() before calling the scheduler!
 	// LAB 4: Your code here.
+	// llm-Assisted code
+	if (tf->tf_trapno == IRQ_OFFSET + IRQ_TIMER) {
+		lapic_eoi();
+		sched_yield();
+		return;
+	}
 
 	// Handle keyboard and serial interrupts.
 	// LAB 5: Your code here.
@@ -241,6 +348,8 @@ trap(struct Trapframe *tf)
 		// Acquire the big kernel lock before doing any
 		// serious kernel work.
 		// LAB 4: Your code here.
+		// LLM-Assisted code
+		lock_kernel();
 		assert(curenv);
 
 		// Garbage collect if current enviroment is a zombie
@@ -286,6 +395,9 @@ page_fault_handler(struct Trapframe *tf)
 	// Handle kernel-mode page faults.
 
 	// LAB 3: Your code here.
+	// LLM-Assisted code
+	if ((tf->tf_cs & 3) == 0)
+		panic("page_fault_handler: page fault in kernel mode");
 
 	// We've already handled kernel-mode exceptions, so if we get here,
 	// the page fault happened in user mode.
@@ -320,6 +432,36 @@ page_fault_handler(struct Trapframe *tf)
 	//   (the 'tf' variable points at 'curenv->env_tf').
 
 	// LAB 4: Your code here.
+	// LLM-Assisted code
+	if (curenv->env_pgfault_upcall) {
+		struct UTrapframe *utf;
+		uintptr_t stacktop;
+
+		// Determine where to place the UTrapframe
+		if (tf->tf_esp >= UXSTACKTOP - PGSIZE && tf->tf_esp < UXSTACKTOP) {
+			// Recursive fault: leave 4-byte scratch word
+			stacktop = tf->tf_esp - sizeof(uint32_t) - sizeof(struct UTrapframe);
+		} else {
+			stacktop = UXSTACKTOP - sizeof(struct UTrapframe);
+		}
+
+		// Check the user can write to the exception stack
+		user_mem_assert(curenv, (void *) stacktop, sizeof(struct UTrapframe), PTE_W);
+
+		// Set up the UTrapframe
+		utf = (struct UTrapframe *) stacktop;
+		utf->utf_fault_va = fault_va;
+		utf->utf_err = tf->tf_err;
+		utf->utf_regs = tf->tf_regs;
+		utf->utf_eip = tf->tf_eip;
+		utf->utf_eflags = tf->tf_eflags;
+		utf->utf_esp = tf->tf_esp;
+
+		// Run the page fault handler on the exception stack
+		tf->tf_eip = (uintptr_t) curenv->env_pgfault_upcall;
+		tf->tf_esp = stacktop;
+		env_run(curenv);
+	}
 
 	// Destroy the environment that caused the fault.
 	cprintf("[%08x] user fault va %08x ip %08x\n",

@@ -65,18 +65,37 @@ _pgfault_upcall:
 	// ways as registers become unavailable as scratch space.
 	//
 	// LAB 4: Your code here.
+	// LLM-Assisted code
+	// Push trap-time %eip onto the trap-time stack.
+	// utf_esp is at offset 48 from current esp (after addl $4):
+	//   fault_va(4) + err(4) + regs(32) + eip(4) + eflags(4) + esp(4) = 52
+	//   esp is at esp+48, eip is at esp+40
+	movl 0x30(%esp), %eax	// %eax = trap-time esp
+	subl $4, %eax		// make room for trap-time eip on trap-time stack
+	movl 0x28(%esp), %ebx	// %ebx = trap-time eip
+	movl %ebx, (%eax)	// push eip onto trap-time stack
+	movl %eax, 0x30(%esp)	// save adjusted trap-time esp back
 
 	// Restore the trap-time registers.  After you do this, you
 	// can no longer modify any general-purpose registers.
 	// LAB 4: Your code here.
+	// LLM-Assisted code
+	addl $8, %esp		// skip fault_va and err
+	popal			// restore all general-purpose registers
 
 	// Restore eflags from the stack.  After you do this, you can
 	// no longer use arithmetic operations or anything else that
 	// modifies eflags.
 	// LAB 4: Your code here.
+	// llm Assisted code
+	addl $4, %esp		// skip eip (already pushed onto trap-time stack)
+	popfl			// restore eflags
 
 	// Switch back to the adjusted trap-time stack.
 	// LAB 4: Your code here.
+	// llm Assisted code
+	popl %esp		// restore esp (now points to trap-time stack with eip on top)
 
 	// Return to re-execute the instruction that faulted.
 	// LAB 4: Your code here.
+	ret

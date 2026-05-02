@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-93239312-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-93239312-1');
+  </script>
+  
+
+
+
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title> Lab #4 - Preemptive Multitasking - ECE469 - Operating Systems Engineering / Spring 2026 </title>
+  <meta name="description" content="IntroductionIn this lab you will implement preemptive multitasking among multiplesimultaneously active user-mode environments.  In part A, you will add multi...">
+  
+  <link rel="stylesheet" href="/ee469/_css/main.css">
+  <link rel="canonical" href="http://purs3lab.github.io//ee469/assignments/04_assignment">
+  <link rel="alternate" type="application/rss+xml" title="ECE469 - Operating Systems Engineering / Spring 2026 - Purdue University" href="http://purs3lab.github.io//ee469/feed.xml" />
+<link rel='stylesheet' id='open-sans-css'  href='//fonts.googleapis.com/css?family=Open+Sans%3A300italic%2C400italic%2C600italic%2C300%2C400%2C600&#038;subset=latin%2Clatin-ext&#038;ver=4.2.4' type='text/css' media='all' />
+<link href='https://fonts.googleapis.com/css?family=Titillium+Web:600italic,600,400,400italic' rel='stylesheet' type='text/css'>
+
+
+
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper" style="z-index: 100;">
+      <table><tr>
+          <td><img width="75" src="/ee469/_images/logo.png" valign="middle"></td>
+          <td style="padding-left:10px;"><a class="schoolname" style="font-size: 15px;" class="site-title" href="https://engineering.purdue.edu/ECE">Purdue University</a>
+          <br/>
+          <span style="margin-top: -2px;margin-bottom: -10px;" class="site-title"><a href="/ee469/" title="ECE469 - Operating Systems Engineering / Spring 2026 - Purdue University"><b>ECE469 - Operating Systems Engineering</a></b></span>
+          <br/>
+          <span class="coursesemeter" style="font-size: 12px;font-weight: bold;margin-top: 10px;display: block;">Spring 2026</span>
+          </td>
+        </tr></table>
+
+    <nav class="site-nav">
+
+      <a href="#" class="menu-icon menu.open">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>  
+
+    <div class="trigger"><h1>Main Navigation</h1>
+
+ <ul class="menu">
+    
+    <li>
+        <a class="page-link" href="/ee469/">
+            <i class="fa fa-home fa-lg"></i> Home
+        </a>
+    </li>
+    
+    <li>
+        <a class="page-link" href="/ee469/schedule/">
+            <i class="fas fa-calendar-alt"></i> Schedule
+        </a>
+    </li>
+    
+    <li>
+        <a class="page-link" href="/ee469/labs/">
+            <i class="fas fa-user-graduate"></i> Labs
+        </a>
+    </li>
+    
+    <li>
+        <a class="page-link" href="/ee469/materials/">
+            <i class="fas fa-book"></i> Reference Materials
+        </a>
+    </li>
+    
+</ul>
+
+     </div>  
+    </nav>
+
+  </div>
+
+  <div class="header-texture" style="height:100%; z-index: 0; position: absolute; top:0; right: 0; left: 0; 
+  background-image: url('/ee469/_images/pattern.png');" />
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Lab #4 - Preemptive Multitasking</h1>
+    <p class="post-meta">Released on Tuesday 03/10/2026</p>
+  </header>
+
+  <div>
+    
+    <span style="font-weight: bold">Due Date:  04/06/2026</span>
+    
+  </div>
+
+  <br />
+  <article class="post-content">
+    <h1 id="introduction">Introduction</h1>
+
+<p>In this lab you will implement preemptive multitasking among multiple
+simultaneously active user-mode environments.</p>
+
+<ul>
+  <li>In part A, you will add multiprocessor support to JOS, implement
+round-robin scheduling, and add basic environment management system
+calls (calls that create and destroy environments, and allocate/map
+memory).</li>
+  <li>In part B, you will implement a Unix-like <code class="language-plaintext highlighter-rouge">fork()</code>, which allows a
+user-mode environment to create copies of itself.</li>
+  <li>Finally, in part C you will add support for inter-process
+communication (IPC), allowing different user-mode environments to
+communicate and synchronize with each other explicitly. You will
+also add support for hardware clock interrupts and preemption.</li>
+</ul>
+
+<h2 id="getting-started">Getting Started</h2>
+
+<p>Use Git to commit your Lab 3 source, fetch the latest version of the
+course repository, and then create a local branch called <code class="language-plaintext highlighter-rouge">lab4</code> based
+on our lab4 branch, <code class="language-plaintext highlighter-rouge">origin/lab4</code>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ cd ~/jos
+$ git pull
+Already up-to-date.
+$ git checkout -b lab4 origin/lab4
+Branch lab4 set up to track remote branch refs/remotes/origin/lab4.
+Switched to a new branch "lab4"
+$ git merge lab3
+Merge made by recursive.
+...
+$
+</code></pre></div></div>
+
+<p>Lab 4 contains a number of new source files, some of which you should
+browse before you start:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>+-------------------+------------------------------------------------+
+|``kern/cpu.h``     | Kernel-private definitions for multiprocessor  |
+|                   | support                                        |
++-------------------+------------------------------------------------+
+|``kern/mpconfig.c``| Code to read the multiprocessor configuration  |
++-------------------+------------------------------------------------+
+|``kern/lapic.c``   | Kernel code driving the local APIC unit in     |
+|                   | each processor                                 |
++-------------------+------------------------------------------------+
+|``kern/mpentry.S`` | Assembly-language entry code for non-boot CPUs |
++-------------------+------------------------------------------------+
+|``kern/spinlock.h``| Kernel-private definitions for spin locks,     |
+|                   | including the big kernel lock                  |
++-------------------+------------------------------------------------+
+|``kern/spinlock.c``| Kernel code implementing spin locks            |
++-------------------+------------------------------------------------+
+|``kern/sched.c``   | Code skeleton of the scheduler that you are    |
+|                   | about to implement                             |
++-------------------+------------------------------------------------+
+</code></pre></div></div>
+
+<h2 id="lab-requirements">Lab Requirements</h2>
+
+<p>This lab is divided into three parts, A, B, and C.</p>
+
+<p>As before, you will need to do all of the regular exercises described in
+the lab and provide a writeup that briefly answers
+to the questions posed in the lab.
+Place the write-up in a file called
+<code class="language-plaintext highlighter-rouge">answers-lab4.txt</code> in the top level of your repository directory before
+handing in your work.</p>
+
+<h1 id="part-a-multiprocessor-support-and-cooperative-multitasking">Part A: Multiprocessor Support and Cooperative Multitasking</h1>
+
+<p>In the first part of this lab, you will first extend JOS to run on a
+multiprocessor system, and then implement some new JOS kernel system
+calls to allow user-level environments to create additional new
+environments. You will also implement <em>cooperative</em> round-robin
+scheduling, allowing the kernel to switch from one environment to
+another when the current environment voluntarily relinquishes the CPU
+(or exits). Later in part C you will implement <em>preemptive</em> scheduling,
+which allows the kernel to re-take control of the CPU from an
+environment after a certain time has passed even if the environment does
+not cooperate.</p>
+
+<h2 id="multiprocessor-support">Multiprocessor Support</h2>
+
+<p>We are going to make JOS support “symmetric multiprocessing” (SMP), a
+multiprocessor model in which all CPUs have equivalent access to system
+resources such as memory and I/O buses. While all CPUs are functionally
+identical in SMP, during the boot process they can be classified into
+two types: the bootstrap processor (BSP) is responsible for initializing
+the system and for booting the operating system; and the application
+processors (APs) are activated by the BSP only after the operating
+system is up and running. Which processor is the BSP is determined by
+the hardware and the BIOS. Up to this point, all your existing JOS code
+has been running on the BSP.</p>
+
+<p>In an SMP system, each CPU has an accompanying local APIC (LAPIC) unit.
+The LAPIC units are responsible for delivering interrupts throughout the
+system. The LAPIC also provides its connected CPU with a unique
+identifier. In this lab, we make use of the following basic
+functionality of the LAPIC unit (in <code class="language-plaintext highlighter-rouge">kern/lapic.c</code>):</p>
+
+<ul>
+  <li>Reading the LAPIC identifier (APIC ID) to tell which CPU our code is
+currently running on (see <code class="language-plaintext highlighter-rouge">cpunum()</code>).</li>
+  <li>Sending the <code class="language-plaintext highlighter-rouge">STARTUP</code> interprocessor interrupt (IPI) from the BSP
+to the APs to bring up other CPUs (see <code class="language-plaintext highlighter-rouge">lapic_startap()</code>).</li>
+  <li>In part C, we program LAPIC’s built-in timer to trigger clock
+interrupts to support preemptive multitasking (see <code class="language-plaintext highlighter-rouge">apic_init()</code>).</li>
+</ul>
+
+<p>A processor accesses its LAPIC using memory-mapped I/O (MMIO). In MMIO,
+a portion of <em>physical</em> memory is hardwired to the registers of some I/O
+devices, so the same load/store instructions typically used to access
+memory can be used to access device registers. You’ve already seen one
+IO hole at physical address <code class="language-plaintext highlighter-rouge">0xA0000</code> (we use this to write to the VGA
+display buffer). The LAPIC lives in a hole starting at physical address
+<code class="language-plaintext highlighter-rouge">0xFE000000</code> (32MB short of 4GB), so it’s too high for us to access
+using our usual direct map at <code class="language-plaintext highlighter-rouge">KERNBASE</code>. The JOS virtual memory map
+leaves a 4MB gap at <code class="language-plaintext highlighter-rouge">MMIOBASE</code> so we have a place to map devices like
+this. Since later labs introduce more MMIO regions, you’ll write a
+simple function to allocate space from this region and map device memory
+to it.</p>
+
+<h2 id="exercise-1"><span style="color:blue">Exercise 1</span></h2>
+<blockquote>
+  <p>Implement <code class="language-plaintext highlighter-rouge">mmio_map_region()</code> in <code class="language-plaintext highlighter-rouge">kern/pmap.c</code>. To see how
+this is used, look at the beginning of <code class="language-plaintext highlighter-rouge">lapic_init()</code> in
+<code class="language-plaintext highlighter-rouge">kern/lapic.c</code>. You’ll have to do the next exercise, too, before the
+tests for <code class="language-plaintext highlighter-rouge">mmio_map_region()</code> will run.</p>
+</blockquote>
+
+<blockquote>
+  <h3 id="watch-exercise-1">Watch <a href="https://cfvod.kaltura.com/p/983291/sp/98329100/serveFlavor/entryId/1_mb0uk2tb/v/1/ev/5/flavorId/1_3jya6m73/name/a.mp4">Exercise 1</a></h3>
+</blockquote>
+
+<h1 id="application-processor-bootstrap">Application Processor Bootstrap</h1>
+
+<p>Before booting up APs, the BSP should first collect information about
+the multiprocessor system, such as the total number of CPUs, their APIC
+IDs and the MMIO address of the LAPIC unit. The <code class="language-plaintext highlighter-rouge">mp_init()</code> function
+in <code class="language-plaintext highlighter-rouge">kern/mpconfig.c</code> retrieves this information by reading the MP
+configuration table that resides in the BIOS’s region of memory.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">boot_aps()</code> function (in <code class="language-plaintext highlighter-rouge">kern/init.c</code>) drives the AP bootstrap
+process. APs start in real mode, much like how the bootloader started in
+<code class="language-plaintext highlighter-rouge">boot/boot.S</code>, so <code class="language-plaintext highlighter-rouge">boot_aps()</code> copies the AP entry code
+(<code class="language-plaintext highlighter-rouge">kern/mpentry.S</code>) to a memory location that is addressable in the
+real mode. Unlike with the bootloader, we have some control over where
+the AP will start executing code; we copy the entry code to <code class="language-plaintext highlighter-rouge">0x7000</code>
+(<code class="language-plaintext highlighter-rouge">MPENTRY_PADDR</code>), but any unused, page-aligned physical address below
+640KB would work.</p>
+
+<p>After that, <code class="language-plaintext highlighter-rouge">boot_aps()</code> activates APs one after another, by sending
+<code class="language-plaintext highlighter-rouge">STARTUP</code> IPIs to the LAPIC unit of the corresponding AP, along with
+an initial <code class="language-plaintext highlighter-rouge">CS:IP</code> address at which the AP should start running its
+entry code (<code class="language-plaintext highlighter-rouge">MPENTRY_PADDR</code> in our case). The entry code in
+<code class="language-plaintext highlighter-rouge">kern/mpentry.S</code> is quite similar to that of <code class="language-plaintext highlighter-rouge">boot/boot.S</code>. After
+some brief setup, it puts the AP into protected mode with paging
+enabled, and then calls the C setup routine <code class="language-plaintext highlighter-rouge">mp_main()</code> (also in
+<code class="language-plaintext highlighter-rouge">kern/init.c</code>). <code class="language-plaintext highlighter-rouge">boot_aps()</code> waits for the AP to signal a
+<code class="language-plaintext highlighter-rouge">CPU_STARTED</code> flag in <code class="language-plaintext highlighter-rouge">cpu_status</code> field of its <code class="language-plaintext highlighter-rouge">struct CpuInfo</code>
+before going on to wake up the next one.</p>
+
+<h2 id="exercise-2"><span style="color:blue">Exercise 2</span></h2>
+<blockquote>
+  <p>Read <code class="language-plaintext highlighter-rouge">boot_aps()</code> and <code class="language-plaintext highlighter-rouge">mp_main()</code> in <code class="language-plaintext highlighter-rouge">kern/init.c</code>,
+and the assembly code in <code class="language-plaintext highlighter-rouge">kern/mpentry.S</code>. Make sure you understand
+the control flow transfer during the bootstrap of APs. Then modify your
+implementation of <code class="language-plaintext highlighter-rouge">page_init()</code> in <code class="language-plaintext highlighter-rouge">kern/pmap.c</code> to avoid adding the
+page at <code class="language-plaintext highlighter-rouge">MPENTRY_PADDR</code> to the free list, so that we can safely copy
+and run AP bootstrap code at that physical address. Your code should
+pass the updated <code class="language-plaintext highlighter-rouge">check_page_free_list()</code> test (but might fail the
+updated <code class="language-plaintext highlighter-rouge">check_kern_pgdir()</code> test, which we will fix soon).</p>
+</blockquote>
+
+<blockquote>
+  <h3 id="watch-exercise-2">Watch <a href="https://cfvod.kaltura.com/p/983291/sp/98329100/serveFlavor/entryId/1_mb0uk2tb/v/1/ev/5/flavorId/1_3jya6m73/name/a.mp4">Exercise 2</a></h3>
+</blockquote>
+
+<p><strong>Question</strong></p>
+<blockquote>
+  <ol>
+    <li>Compare <code class="language-plaintext highlighter-rouge">kern/mpentry.S</code> side by side with <code class="language-plaintext highlighter-rouge">boot/boot.S</code>. Bearing
+  in mind that <code class="language-plaintext highlighter-rouge">kern/mpentry.S</code> is compiled and linked to run above
+  <code class="language-plaintext highlighter-rouge">KERNBASE</code> just like everything else in the kernel, what is the
+  purpose of macro <code class="language-plaintext highlighter-rouge">MPBOOTPHYS</code>? Why is it necessary in
+  <code class="language-plaintext highlighter-rouge">kern/mpentry.S</code> but not in <code class="language-plaintext highlighter-rouge">boot/boot.S</code>? In other words, what
+  could go wrong if it were omitted in <code class="language-plaintext highlighter-rouge">kern/mpentry.S</code>?
+  Hint: recall the differences between the link address and the load
+  address that we have discussed in Lab 1.</li>
+  </ol>
+</blockquote>
+
+<h1 id="per-cpu-state-and-initialization">Per-CPU State and Initialization</h1>
+
+<p>When writing a multiprocessor OS, it is important to distinguish between
+per-CPU state that is private to each processor, and global state that
+the whole system shares. <code class="language-plaintext highlighter-rouge">kern/cpu.h</code> defines most of the per-CPU
+state, including <code class="language-plaintext highlighter-rouge">struct CpuInfo</code>, which stores per-CPU variables.
+<code class="language-plaintext highlighter-rouge">cpunum()</code> always returns the ID of the CPU that calls it, which can
+be used as an index into arrays like <code class="language-plaintext highlighter-rouge">cpus</code>. Alternatively, the macro
+<code class="language-plaintext highlighter-rouge">thiscpu</code> is shorthand for the current CPU’s <code class="language-plaintext highlighter-rouge">struct CpuInfo</code>.</p>
+
+<p>Here is the per-CPU state you should be aware of:</p>
+
+<ul>
+  <li>
+    <p><strong>Per-CPU kernel stack</strong>.
+Because multiple CPUs can trap into the kernel simultaneously, we
+need a separate kernel stack for each processor to prevent them from
+interfering with each other’s execution. The array
+<code class="language-plaintext highlighter-rouge">percpu_kstacks[NCPU][KSTKSIZE]</code> reserves space for NCPU’s worth of
+kernel stacks.</p>
+
+    <p>In Lab 2, you mapped the physical memory that <code class="language-plaintext highlighter-rouge">bootstack</code> refers to
+as the BSP’s kernel stack just below <code class="language-plaintext highlighter-rouge">KSTACKTOP</code>. Similarly, in
+this lab, you will map each CPU’s kernel stack into this region with
+guard pages acting as a buffer between them. CPU 0’s stack will still
+grow down from <code class="language-plaintext highlighter-rouge">KSTACKTOP</code>; CPU 1’s stack will start <code class="language-plaintext highlighter-rouge">KSTKGAP</code>
+bytes below the bottom of CPU 0’s stack, and so on.
+<code class="language-plaintext highlighter-rouge">inc/memlayout.h</code> shows the mapping layout.</p>
+  </li>
+  <li>
+    <p><strong>Per-CPU TSS and TSS descriptor</strong>.
+A per-CPU task state segment (TSS) is also needed in order to
+specify where each CPU’s kernel stack lives. The TSS for CPU <em>i</em> is
+stored in <code class="language-plaintext highlighter-rouge">cpus[i].cpu_ts</code>, and the corresponding TSS descriptor is
+defined in the GDT entry <code class="language-plaintext highlighter-rouge">gdt[(GD_TSS0 &gt;&gt; 3) + i]</code>. The global
+<code class="language-plaintext highlighter-rouge">ts</code> variable defined in <code class="language-plaintext highlighter-rouge">kern/trap.c</code> will no longer be useful.</p>
+  </li>
+  <li>
+    <p><strong>Per-CPU current environment pointer</strong>.
+Since each CPU can run different user process simultaneously, we
+redefined the symbol <code class="language-plaintext highlighter-rouge">curenv</code> to refer to
+<code class="language-plaintext highlighter-rouge">cpus[cpunum()].cpu_env</code> (or <code class="language-plaintext highlighter-rouge">thiscpu-&gt;cpu_env</code>), which points to
+the environment <em>currently</em> executing on the <em>current</em> CPU (the CPU
+on which the code is running).</p>
+  </li>
+  <li>
+    <p><strong>Per-CPU system registers</strong>.
+All registers, including system registers, are private to a CPU.
+Therefore, instructions that initialize these registers, such as
+<code class="language-plaintext highlighter-rouge">lcr3()</code>, <code class="language-plaintext highlighter-rouge">ltr()</code>, <code class="language-plaintext highlighter-rouge">lgdt()</code>, <code class="language-plaintext highlighter-rouge">lidt()</code>, etc., must be executed
+once on each CPU. Functions <code class="language-plaintext highlighter-rouge">env_init_percpu()</code> and
+<code class="language-plaintext highlighter-rouge">trap_init_percpu()</code> are defined for this purpose.</p>
+  </li>
+</ul>
+
+<h2 id="exercise-3"><span style="color:blue">Exercise 3</span></h2>
+<blockquote>
+  <p>Modify <code class="language-plaintext highlighter-rouge">mem_init_mp()</code> (in <code class="language-plaintext highlighter-rouge">kern/pmap.c</code>) to map per-CPU
+stacks starting at <code class="language-plaintext highlighter-rouge">KSTACKTOP</code>, as shown in <code class="language-plaintext highlighter-rouge">inc/memlayout.h</code>. The
+size of each stack is <code class="language-plaintext highlighter-rouge">KSTKSIZE</code> bytes plus <code class="language-plaintext highlighter-rouge">KSTKGAP</code> bytes of
+unmapped guard pages. Your code should pass the new check in
+<code class="language-plaintext highlighter-rouge">check_kern_pgdir()</code>.</p>
+</blockquote>
+
+<blockquote>
+  <h3 id="watch-exercise-3">Watch <a href="https://cfvod.kaltura.com/p/983291/sp/98329100/serveFlavor/entryId/1_mb0uk2tb/v/1/ev/5/flavorId/1_3jya6m73/name/a.mp4">Exercise 3</a></h3>
+</blockquote>
+
+<h2 id="exercise-4"><span style="color:blue">Exercise 4</span></h2>
+<blockquote>
+  <p>The code in <code class="language-plaintext highlighter-rouge">trap_init_percpu()</code> (<code class="language-plaintext highlighter-rouge">kern/trap.c</code>)
+initializes the TSS and TSS descriptor for the BSP. It worked in Lab 3,
+but is incorrect when running on other CPUs. Change the code so that it
+can work on all CPUs. (Note: your new code should not use the global
+<code class="language-plaintext highlighter-rouge">ts</code> variable any more.)</p>
+</blockquote>
+
+<blockquote>
+  <h3 id="watch-exercise-4">Watch <a href="https://cfvod.kaltura.com/p/983291/sp/98329100/serveFlavor/entryId/1_mb0uk2tb/v/1/ev/5/flavorId/1_3jya6m73/name/a.mp4">Exercise 4</a></h3>
+</blockquote>
+
+<p>When you finish the above exercises, run JOS in QEMU with 4 CPUs using
+<code class="language-plaintext highlighter-rouge">make qemu CPUS=4</code> (or <code class="language-plaintext highlighter-rouge">make qemu-nox CPUS=4</code>), you should see output like
+this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>...
+Physical memory: 66556K available, base = 640K, extended = 65532K
+check_page_alloc() succeeded!
+check_page() succeeded!
+check_kern_pgdir() succeeded!
+check_page_installed_pgdir() succeeded!
+SMP: CPU 0 found 4 CPU(s)
+enabled interrupts: 1 2
+SMP: CPU 1 starting
+SMP: CPU 2 starting
+SMP: CPU 3 starting
+</code></pre></div></div>
+
+<h1 id="locking">Locking</h1>
+
+<p>Our current code spins after initializing the AP in <code class="language-plaintext highlighter-rouge">mp_main()</code>.
+Before letting the AP get any further, we need to first address race
+conditions when multiple CPUs run kernel code simultaneously. The
+simplest way to achieve this is to use a <em>big kernel lock</em>. The big
+kernel lock is a single global lock that is held whenever an environment
+enters kernel mode, and is released when the environment returns to user
+mode. In this model, environments in user mode can run concurrently on
+any available CPUs, but no more than one environment can run in kernel
+mode; any other environments that try to enter kernel mode are forced to
+wait.</p>
+
+<p><code class="language-plaintext highlighter-rouge">kern/spinlock.h</code> declares the big kernel lock, namely
+<code class="language-plaintext highlighter-rouge">kernel_lock</code>. It also provides <code class="language-plaintext highlighter-rouge">lock_kernel()</code> and
+<code class="language-plaintext highlighter-rouge">unlock_kernel()</code>, shortcuts to acquire and release the lock. You
+should apply the big kernel lock at four locations:</p>
+
+<ul>
+  <li>In <code class="language-plaintext highlighter-rouge">i386_init()</code>, acquire the lock before the BSP wakes up the
+other CPUs.</li>
+  <li>In <code class="language-plaintext highlighter-rouge">mp_main()</code>, acquire the lock after initializing the AP, and
+then call <code class="language-plaintext highlighter-rouge">sched_yield()</code> to start running environments on this AP.</li>
+  <li>In <code class="language-plaintext highlighter-rouge">trap()</code>, acquire the lock when trapped from user mode. To
+determine whether a trap happened in user mode or in kernel mode,
+check the low bits of the <code class="language-plaintext highlighter-rouge">tf_cs</code>.</li>
+  <li>In <code class="language-plaintext highlighter-rouge">env_run()</code>, release the lock <em>right before</em> switching to user
+mode. Do not do that too early or too late, otherwise you will
+experience races or deadlocks.</li>
+</ul>
+
+<h2 id="exercise-5"><span style="color:blue">Exercise 5</span></h2>
+<blockquote>
+  <p>Apply the big kernel lock as described above, by calling
+<code class="language-plaintext highlighter-rouge">lock_kernel()</code> and <code class="language-plaintext highlighter-rouge">unlock_kernel()</code> at the proper locations.</p>
+</blockquote>
+
+<blockquote>
+  <p>How to test if your locking is correct? You can’t at this moment! But
+you will be able to after you implement the scheduler in the next
+exercise.</p>
+</blockquote>
+
+<blockquote>
+  <h3 id="watch-exercise-5">Watch <a href="https://www.youtube.com/watch?v=KC1e70L9jGs">Exercise 5</a></h3>
+</blockquote>
+
+<p><strong>Question</strong></p>
+<ol>
+  <li>It seems that using the big kernel lock guarantees that only one CPU
+can run the kernel code at a time. Why do we still need separate
+kernel stacks for each CPU? Describe a scenario in which using a
+shared kernel stack will go wrong, even with the protection of the
+big kernel lock.</li>
+</ol>
+
+<h2 id="challenge-no-extra-credit"><span style="color:green">Challenge (No Extra Credit)</span></h2>
+<blockquote>
+  <p>The big kernel lock is simple and easy to use. Nevertheless,
+it eliminates all concurrency in kernel mode. Most modern operating
+systems use different locks to protect different parts of their shared
+state, an approach called <em>fine-grained locking</em>. Fine-grained locking
+can increase performance significantly, but is more difficult to
+implement and error-prone. If you are brave enough, drop the big kernel
+lock and embrace concurrency in JOS!</p>
+</blockquote>
+
+<blockquote>
+  <p>It is up to you to decide the locking granularity (the amount of data
+that a lock protects). As a hint, you may consider using spin locks to
+ensure exclusive access to these shared components in the JOS kernel:
+1) The page allocator; 2) The console driver; 3) The scheduler; 4)
+     The inter-process communication (IPC) state that you will implement
+     in the part C.</p>
+</blockquote>
+
+<h2 id="round-robin-scheduling">Round-Robin Scheduling</h2>
+
+<p>Your next task in this lab is to change the JOS kernel so that it can
+alternate between multiple environments in “round-robin” fashion.
+Round-robin scheduling in JOS works as follows:</p>
+
+<ul>
+  <li>The function <code class="language-plaintext highlighter-rouge">sched_yield()</code> in the new <code class="language-plaintext highlighter-rouge">kern/sched.c</code> is
+responsible for selecting a new environment to run. It searches
+sequentially through the <code class="language-plaintext highlighter-rouge">envs[]</code> array in circular fashion,
+starting just after the previously running environment (or at the
+beginning of the array if there was no previously running
+environment), picks the first environment it finds with a status of
+<code class="language-plaintext highlighter-rouge">ENV_RUNNABLE</code> (see <code class="language-plaintext highlighter-rouge">inc/env.h</code>), and calls <code class="language-plaintext highlighter-rouge">env_run()</code> to jump
+into that environment.</li>
+  <li><code class="language-plaintext highlighter-rouge">sched_yield()</code> must never run the same environment on two CPUs at
+the same time. It can tell that an environment is currently running
+on some CPU (possibly the current CPU) because that environment’s
+status will be <code class="language-plaintext highlighter-rouge">ENV_RUNNING</code>.</li>
+  <li>We have implemented a new system call for you, <code class="language-plaintext highlighter-rouge">sys_yield()</code>, which
+user environments can call to invoke the kernel’s <code class="language-plaintext highlighter-rouge">sched_yield()</code>
+function and thereby voluntarily give up the CPU to a different
+environment.</li>
+</ul>
+
+<h2 id="exercise-6"><span style="color:blue">Exercise 6</span></h2>
+<blockquote>
+  <p>Implement round-robin scheduling in <code class="language-plaintext highlighter-rouge">sched_yield()</code> as
+described above. Don’t forget to modify <code class="language-plaintext highlighter-rouge">syscall()</code> to dispatch
+<code class="language-plaintext highlighter-rouge">sys_yield()</code>.</p>
+</blockquote>
+
+<blockquote>
+  <p>Make sure to invoke <code class="language-plaintext highlighter-rouge">sched_yield()</code> in <code class="language-plaintext highlighter-rouge">mp_main</code>.</p>
+</blockquote>
+
+<blockquote>
+  <p>Modify <code class="language-plaintext highlighter-rouge">kern/init.c</code> to create three (or more!) environments that all
+run the program <code class="language-plaintext highlighter-rouge">user/yield.c</code>.</p>
+</blockquote>
+
+<blockquote>
+  <p>Run make qemu. You should see the environments switch back and forth
+between each other five times before terminating, like below.</p>
+</blockquote>
+
+<blockquote>
+  <p>Test also with several CPUS: make qemu CPUS=2.</p>
+</blockquote>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+    ...
+    Hello, I am environment 00001000.
+    Hello, I am environment 00001001.
+    Hello, I am environment 00001002.
+    Back in environment 00001000, iteration 0.
+    Back in environment 00001001, iteration 0.
+    Back in environment 00001002, iteration 0.
+    Back in environment 00001000, iteration 1.
+    Back in environment 00001001, iteration 1.
+    Back in environment 00001002, iteration 1.
+    ...
+</code></pre></div></div>
+<blockquote>
+  <p>After the <code class="language-plaintext highlighter-rouge">yield</code> programs exit, there will be no runnable environment
+in the system, the scheduler should invoke the JOS kernel monitor. If
+any of this does not happen, then fix your code before proceeding.</p>
+</blockquote>
+
+<blockquote>
+  <p>If you use CPUS=1 at this point, all environments should successfully
+run. Setting CPUS larger than 1 at this time may result in a general
+protection or kernel page fault once there are no more runnable
+environments due to unhandled timer interrupts (which we will fix
+below!).</p>
+</blockquote>
+
+<blockquote>
+  <h3 id="watch-exercise-6">Watch <a href="https://www.youtube.com/watch?v=KC1e70L9jGs">Exercise 6</a></h3>
+</blockquote>
+
+<p><strong>Question</strong></p>
+<ol>
+  <li>
+    <p>In your implementation of <code class="language-plaintext highlighter-rouge">env_run()</code> you should have called
+<code class="language-plaintext highlighter-rouge">lcr3()</code>. Before and after the call to <code class="language-plaintext highlighter-rouge">lcr3()</code>, your code makes
+references (at least it should) to the variable <code class="language-plaintext highlighter-rouge">e</code>, the argument
+to <code class="language-plaintext highlighter-rouge">env_run</code>. Upon loading the <code class="language-plaintext highlighter-rouge">%cr3</code> register, the addressing
+context used by the MMU is instantly changed. But a virtual address
+(namely <code class="language-plaintext highlighter-rouge">e</code>) has meaning relative to a given address context–the
+address context specifies the physical address to which the virtual
+address maps. Why can the pointer <code class="language-plaintext highlighter-rouge">e</code> be dereferenced both before
+and after the addressing switch?</p>
+  </li>
+  <li>
+    <p>Whenever the kernel switches from one environment to another, it must
+ensure the old environment’s registers are saved so they can be
+restored properly later. Why? Where does this happen?</p>
+  </li>
+</ol>
+
+<h2 id="challenge-no-extra-credit-1"><span style="color:green">Challenge (No Extra Credit)</span></h2>
+<blockquote>
+  <p>Add a less trivial scheduling policy to the kernel, such as a
+fixed-priority scheduler that allows each environment to be assigned a
+priority and ensures that higher-priority environments are always chosen
+in preference to lower-priority environments. If you’re feeling really
+adventurous, try implementing a Unix-style adjustable-priority scheduler
+or even a lottery or stride scheduler. (Look up “lottery scheduling” and
+“stride scheduling” in Google.)</p>
+</blockquote>
+
+<blockquote>
+  <p>Write a test program or two that verifies that your scheduling algorithm
+is working correctly (i.e., the right environments get run in the right
+order). It may be easier to write these test programs once you have
+implemented <code class="language-plaintext highlighter-rouge">fork()</code> and IPC in parts B and C of this lab.</p>
+</blockquote>
+
+<h2 id="challenge-no-extra-credit-2"><span style="color:green">Challenge (No Extra Credit)</span></h2>
+<blockquote>
+  <p>The JOS kernel currently does not allow applications to use
+the x86 processor’s x87 floating-point unit (FPU), MMX instructions, or
+Streaming SIMD Extensions (SSE). Extend the <code class="language-plaintext highlighter-rouge">Env</code> structure to provide
+a save area for the processor’s floating point state, and extend the
+context switching code to save and restore this state properly when
+switching from one environment to another. The <code class="language-plaintext highlighter-rouge">FXSAVE</code> and
+<code class="language-plaintext highlighter-rouge">FXRSTOR</code> instructions may be useful, but note that these are not in
+the old i386 user’s manual because they were introduced in more recent
+processors. Write a user-level test program that does something cool
+with floating-point.</p>
+</blockquote>
+
+<h2 id="system-calls-for-environment-creation">System Calls for Environment Creation</h2>
+
+<p>Although your kernel is now capable of running and switching between
+multiple user-level environments, it is still limited to running
+environments that the <em>kernel</em> initially set up. You will now implement
+the necessary JOS system calls to allow <em>user</em> environments to create
+and start other new user environments.</p>
+
+<p>Unix provides the <code class="language-plaintext highlighter-rouge">fork()</code> system call as its process creation
+primitive. Unix <code class="language-plaintext highlighter-rouge">fork()</code> copies the entire address space of calling
+process (the parent) to create a new process (the child). The only
+differences between the two observable from user space are their process
+IDs and parent process IDs (as returned by <code class="language-plaintext highlighter-rouge">getpid</code> and <code class="language-plaintext highlighter-rouge">getppid</code>).
+In the parent, <code class="language-plaintext highlighter-rouge">fork()</code> returns the child’s process ID, while in the
+child, <code class="language-plaintext highlighter-rouge">fork()</code> returns 0. By default, each process gets its own
+private address space, and neither process’s modifications to memory are
+visible to the other.</p>
+
+<p>You will provide a different, more primitive set of JOS system calls for
+creating new user-mode environments. With these system calls you will be
+able to implement a Unix-like <code class="language-plaintext highlighter-rouge">fork()</code> entirely in user space, in
+addition to other styles of environment creation. The new system calls
+you will write for JOS are as follows:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">sys_exofork</code>:
+This system call creates a new environment with an almost blank
+slate: nothing is mapped in the user portion of its address space,
+and it is not runnable. The new environment will have the same
+register state as the parent environment at the time of the
+<code class="language-plaintext highlighter-rouge">sys_exofork</code> call. In the parent, <code class="language-plaintext highlighter-rouge">sys_exofork</code> will return the
+<code class="language-plaintext highlighter-rouge">envid_t</code> of the newly created environment (or a negative error
+code if the environment allocation failed). In the child, however,
+it will return 0. (Since the child starts out marked as not
+runnable, <code class="language-plaintext highlighter-rouge">sys_exofork</code> will not actually return in the child
+until the parent has explicitly allowed this by marking the child
+runnable using….)</li>
+  <li><code class="language-plaintext highlighter-rouge">sys_env_set_status</code>:
+Sets the status of a specified environment to <code class="language-plaintext highlighter-rouge">ENV_RUNNABLE</code> or
+<code class="language-plaintext highlighter-rouge">ENV_NOT_RUNNABLE</code>. This system call is typically used to mark a
+new environment ready to run, once its address space and register
+state has been fully initialized.</li>
+  <li><code class="language-plaintext highlighter-rouge">sys_page_alloc</code>:
+Allocates a page of physical memory and maps it at a given virtual
+address in a given environment’s address space.</li>
+  <li><code class="language-plaintext highlighter-rouge">sys_page_map</code>:
+Copy a page mapping (<em>not</em> the contents of a page!) from one
+environment’s address space to another, leaving a memory sharing
+arrangement in place so that the new and the old mappings both refer
+to the same page of physical memory.</li>
+  <li><code class="language-plaintext highlighter-rouge">sys_page_unmap</code>:
+Unmap a page mapped at a given virtual address in a given
+environment.</li>
+</ul>
+
+<p>For all of the system calls above that accept environment IDs, the JOS
+kernel supports the convention that a value of 0 means “the current
+environment.” This convention is implemented by <code class="language-plaintext highlighter-rouge">envid2env()</code> in
+<code class="language-plaintext highlighter-rouge">kern/env.c</code>.</p>
+
+<p>We have provided a very primitive implementation of a Unix-like
+<code class="language-plaintext highlighter-rouge">fork()</code> in the test program <code class="language-plaintext highlighter-rouge">user/dumbfork.c</code>. This test program
+uses the above system calls to create and run a child environment with a
+copy of its own address space. The two environments then switch back and
+forth using <code class="language-plaintext highlighter-rouge">sys_yield</code> as in the previous exercise. The parent exits
+after 10 iterations, whereas the child exits after 20.</p>
+
+<h2 id="exercise-7"><span style="color:blue">Exercise 7</span></h2>
+<blockquote>
+  <p>Implement the system calls described above in
+<code class="language-plaintext highlighter-rouge">kern/syscall.c</code>. You will need to use various functions in
+<code class="language-plaintext highlighter-rouge">kern/pmap.c</code> and <code class="language-plaintext highlighter-rouge">kern/env.c</code>, particularly <code class="language-plaintext highlighter-rouge">envid2env()</code>. For
+now, whenever you call <code class="language-plaintext highlighter-rouge">envid2env()</code>, pass 1 in the <code class="language-plaintext highlighter-rouge">checkperm</code>
+parameter. Be sure you check for any invalid system call arguments,
+returning <code class="language-plaintext highlighter-rouge">-E_INVAL</code> in that case. Test your JOS kernel with
+<code class="language-plaintext highlighter-rouge">user/dumbfork</code> and make sure it works before proceeding.</p>
+</blockquote>
+
+<blockquote>
+  <h3 id="watch-exercise-7">Watch <a href="https://www.youtube.com/watch?v=KC1e70L9jGs">Exercise 7</a></h3>
+</blockquote>
+
+<h2 id="challenge-no-extra-credit-3"><span style="color:green">Challenge (No Extra Credit)</span></h2>
+<blockquote>
+  <p>Add the additional system calls necessary to <em>read</em> all of
+the vital state of an existing environment as well as set it up. Then
+implement a user mode program that forks off a child environment, runs
+it for a while (e.g., a few iterations of <code class="language-plaintext highlighter-rouge">sys_yield()</code>), then takes a
+complete snapshot or <em>checkpoint</em> of the child environment, runs the
+child for a while longer, and finally restores the child environment to
+the state it was in at the checkpoint and continues it from there. Thus,
+you are effectively “replaying” the execution of the child environment
+from an intermediate state. Make the child environment perform some
+interaction with the user using <code class="language-plaintext highlighter-rouge">sys_cgetc()</code> or <code class="language-plaintext highlighter-rouge">readline()</code> so
+that the user can view and mutate its internal state, and verify that
+with your checkpoint/restart you can give the child environment a case
+of selective amnesia, making it “forget” everything that happened beyond
+a certain point.</p>
+</blockquote>
+
+<p>This completes Part A of the lab; check your progress using <code class="language-plaintext highlighter-rouge">make grade</code>.
+If you are trying to figure out why a particular test case is failing,
+run <code class="language-plaintext highlighter-rouge">./grade-lab4 -v</code>, which will show you the output of the
+kernel builds and QEMU runs for each test, until a test fails.
+When a test fails, the script will stop, and then you can
+inspect <code class="language-plaintext highlighter-rouge">jos.out</code> to see what the kernel actually printed.</p>
+
+<h1 id="part-b-copy-on-write-fork">Part B: Copy-on-Write Fork</h1>
+
+<p>As mentioned earlier, Unix provides the <code class="language-plaintext highlighter-rouge">fork()</code> system call as its
+primary process creation primitive. The <code class="language-plaintext highlighter-rouge">fork()</code> system call copies
+the address space of the calling process (the parent) to create a new
+process (the child).</p>
+
+<p>A naive implementation of <code class="language-plaintext highlighter-rouge">fork()</code> would be done
+by copying all data from the parent’s
+pages into new pages allocated for the child. This is essentially the
+same approach that <code class="language-plaintext highlighter-rouge">dumbfork()</code> takes. The copying of the parent’s
+address space into the child is the most expensive part of the
+<code class="language-plaintext highlighter-rouge">fork()</code> operation.</p>
+
+<p>However, a call to <code class="language-plaintext highlighter-rouge">fork()</code> is frequently followed almost immediately
+by a call to <code class="language-plaintext highlighter-rouge">exec()</code> in the child process, which replaces the child’s
+memory with a new program. This is what the the shell typically does,
+for example. In this case, the time spent copying the parent’s address
+space is largely wasted, because the child process will use very little
+of its memory before calling <code class="language-plaintext highlighter-rouge">exec()</code>.</p>
+
+<p>For this reason, later versions of Unix took advantage of virtual memory
+hardware to allow the parent and child to <em>share</em> the memory mapped into
+their respective address spaces until one of the processes actually
+modifies it. This technique is known as <em>copy-on-write</em>. To do this, on
+<code class="language-plaintext highlighter-rouge">fork()</code> the kernel would copy the address space <em>mappings</em> from the
+parent to the child instead of the contents of the mapped pages, and at
+the same time mark the now-shared pages read-only. When one of the two
+processes tries to write to one of these shared pages, the process takes
+a page fault. At this point, the Unix kernel realizes that the page was
+really a “virtual” or “copy-on-write” copy, and so it makes a new,
+private, writable copy of the page for the faulting process. In this
+way, the contents of individual pages aren’t actually copied until they
+are actually written to. This optimization makes a <code class="language-plaintext highlighter-rouge">fork()</code> followed
+by an <code class="language-plaintext highlighter-rouge">exec()</code> in the child much cheaper: the child will probably only
+need to copy one page (the current page of its stack) before it calls
+<code class="language-plaintext highlighter-rouge">exec()</code>.</p>
+
+<p>In the next piece of this lab, you will implement a “proper” Unix-like
+<code class="language-plaintext highlighter-rouge">fork()</code> with copy-on-write, as a user space library routine.
+Implementing <code class="language-plaintext highlighter-rouge">fork()</code> and copy-on-write support in user space has the
+benefit that the kernel remains much simpler and thus more likely to be
+correct. It also lets individual user-mode programs define their own
+semantics for <code class="language-plaintext highlighter-rouge">fork()</code>. A program that wants a slightly different
+implementation (for example, the expensive always-copy version like
+<code class="language-plaintext highlighter-rouge">dumbfork()</code>, or one in which the parent and child actually share
+memory afterward) can easily provide its own.</p>
+
+<h2 id="user-level-page-fault-handling">User-level page fault handling</h2>
+
+<p>A user-level copy-on-write <code class="language-plaintext highlighter-rouge">fork()</code> needs to know about page faults on
+write-protected pages, so that’s what you’ll implement first.
+Copy-on-write is only one of many possible uses for user-level page
+fault handling.</p>
+
+<p>It’s common to set up an address space so that page faults indicate when
+some action needs to take place. For example, most Unix kernels
+initially map only a single page in a new process’s stack region, and
+allocate and map additional stack pages later “on demand” as the
+process’s stack consumption increases and causes page faults on stack
+addresses that are not yet mapped. A typical Unix kernel must keep track
+of what action to take when a page fault occurs in each region of a
+process’s space. For example, a fault in the stack region will typically
+allocate and map new page of physical memory. A fault in the program’s
+BSS region will typically allocate a new page, fill it with zeroes, and
+map it. In systems with demand-paged executables, a fault in the text
+region will read the corresponding page of the binary off of disk and
+then map it.</p>
+
+<p>This is a lot of information for the kernel to keep track of. Instead of
+taking the traditional Unix approach, you will decide what to do about
+each page fault in user space, where bugs are less damaging. This design
+has the added benefit of allowing programs great flexibility in defining
+their memory regions; you’ll use user-level page fault handling later
+for mapping and accessing files on a disk-based file system.</p>
+
+<h1 id="setting-the-page-fault-handler">Setting the Page Fault Handler</h1>
+
+<p>In order to handle its own page faults, a user environment will need to
+register a <em>page fault handler entrypoint</em> with the JOS kernel. The user
+environment registers its page fault entrypoint via the new
+<code class="language-plaintext highlighter-rouge">sys_env_set_pgfault_upcall</code> system call. We have added a new member
+to the <code class="language-plaintext highlighter-rouge">Env</code> structure, <code class="language-plaintext highlighter-rouge">env_pgfault_upcall</code>, to record this
+information.</p>
+
+<h2 id="exercise-8"><span style="color:blue">Exercise 8</span></h2>
+<blockquote>
+  <p>Implement the <code class="language-plaintext highlighter-rouge">sys_env_set_pgfault_upcall</code> system call. Be
+sure to enable permission checking when looking up the environment ID of
+the target environment, since this is a “dangerous” system call.</p>
+</blockquote>
+
+<blockquote>
+  <h3 id="watch-exercise-8">Watch <a href="https://www.youtube.com/watch?v=KC1e70L9jGs">Exercise 8</a></h3>
+</blockquote>
+
+<h1 id="normal-and-exception-stacks-in-user-environments">Normal and Exception Stacks in User Environments</h1>
+
+<p>During normal execution, a user environment in JOS will run on the
+<em>normal</em> user stack: its <code class="language-plaintext highlighter-rouge">ESP</code> register starts out pointing at
+<code class="language-plaintext highlighter-rouge">USTACKTOP</code>, and the stack data it pushes resides on the page between
+<code class="language-plaintext highlighter-rouge">USTACKTOP-PGSIZE</code> and <code class="language-plaintext highlighter-rouge">USTACKTOP-1</code> inclusive. When a page fault
+occurs in user mode, however, the kernel will restart the user
+environment running a designated user-level page fault handler on a
+different stack, namely the <em>user exception</em> stack. In essence, we will
+make the JOS kernel implement automatic “stack switching” on behalf of
+the user environment, in much the same way that the x86 <em>processor</em>
+already implements stack switching on behalf of JOS when transferring
+from user mode to kernel mode!</p>
+
+<p>The JOS user exception stack is also one page in size, and its top is
+defined to be at virtual address <code class="language-plaintext highlighter-rouge">UXSTACKTOP</code>, so the valid bytes of
+the user exception stack are from <code class="language-plaintext highlighter-rouge">UXSTACKTOP-PGSIZE</code> through
+<code class="language-plaintext highlighter-rouge">UXSTACKTOP-1</code> inclusive. While running on this exception stack, the
+user-level page fault handler can use JOS’s regular system calls to map
+new pages or adjust mappings so as to fix whatever problem originally
+caused the page fault. Then the user-level page fault handler returns,
+via an assembly language stub, to the faulting code on the original
+stack.</p>
+
+<p>Each user environment that wants to support user-level page fault
+handling will need to allocate memory for its own exception stack, using
+the <code class="language-plaintext highlighter-rouge">sys_page_alloc()</code> system call introduced in part A.</p>
+
+<h1 id="invoking-the-user-page-fault-handler">Invoking the User Page Fault Handler</h1>
+
+<p>You will now need to change the page fault handling code in
+<code class="language-plaintext highlighter-rouge">kern/trap.c</code> to handle page faults from user mode as follows. We will
+call the state of the user environment at the time of the fault the
+<em>trap-time</em> state.</p>
+
+<p>If there is no page fault handler registered, the JOS kernel destroys
+the user environment with a message as before. Otherwise, the kernel
+sets up a trap frame on the exception stack that looks like a
+<code class="language-plaintext highlighter-rouge">struct UTrapframe</code> from <code class="language-plaintext highlighter-rouge">inc/trap.h</code>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>                        &lt;-- UXSTACKTOP
+    trap-time esp
+    trap-time eflags
+    trap-time eip
+    trap-time eax       start of struct PushRegs
+    trap-time ecx
+    trap-time edx
+    trap-time ebx
+    trap-time esp
+    trap-time ebp
+    trap-time esi
+    trap-time edi       end of struct PushRegs
+    tf_err (error code)
+    fault_va            &lt;-- %esp when handler is run
+</code></pre></div></div>
+
+<p>The kernel then arranges for the user environment to resume execution
+with the page fault handler running on the exception stack with this
+stack frame; you must figure out how to make this happen. The
+<code class="language-plaintext highlighter-rouge">fault_va</code> is the virtual address that caused the page fault.</p>
+
+<p>If the user environment is <em>already</em> running on the user exception stack
+when an exception occurs, then the page fault handler itself has
+faulted. In this case, you should start the new stack frame just under
+the current <code class="language-plaintext highlighter-rouge">tf-&gt;tf_esp</code> rather than at <code class="language-plaintext highlighter-rouge">UXSTACKTOP</code>. You should
+first push an empty 32-bit word, then a <code class="language-plaintext highlighter-rouge">struct UTrapframe</code>.</p>
+
+<p>To test whether <code class="language-plaintext highlighter-rouge">tf-&gt;tf_esp</code> is already on the user exception stack,
+check whether it is in the range between <code class="language-plaintext highlighter-rouge">UXSTACKTOP-PGSIZE</code> and
+<code class="language-plaintext highlighter-rouge">UXSTACKTOP-1</code>, inclusive.</p>
+
+<h2 id="exercise-9"><span style="color:blue">Exercise 9</span></h2>
+<blockquote>
+  <p>Implement the code in <code class="language-plaintext highlighter-rouge">page_fault_handler</code> in
+<code class="language-plaintext highlighter-rouge">kern/trap.c</code> required to dispatch page faults to the user-mode
+handler. Be sure to take appropriate precautions when writing into the
+exception stack. (What happens if the user environment runs out of space
+on the exception stack?)</p>
+</blockquote>
+
+<blockquote>
+  <h3 id="watch-exercise-9">Watch <a href="https://www.youtube.com/watch?v=9qaTKOtp93g">Exercise 9</a></h3>
+</blockquote>
+
+<h1 id="user-mode-page-fault-entrypoint">User-mode Page Fault Entrypoint</h1>
+
+<p>Next, you need to implement the assembly routine that will take care of
+calling the C page fault handler and resume execution at the original
+faulting instruction. This assembly routine is the handler that will be
+registered with the kernel using <code class="language-plaintext highlighter-rouge">sys_env_set_pgfault_upcall()</code>.</p>
+
+<h2 id="exercise-10"><span style="color:blue">Exercise 10</span></h2>
+<blockquote>
+  <p>Implement the <code class="language-plaintext highlighter-rouge">_pgfault_upcall</code> routine in
+<code class="language-plaintext highlighter-rouge">lib/pfentry.S</code>. The interesting part is returning to the original
+point in the user code that caused the page fault. You’ll return
+directly there, without going back through the kernel. The hard part is
+simultaneously switching stacks and re-loading the EIP.</p>
+</blockquote>
+
+<blockquote>
+  <h3 id="watch-exercise-10">Watch <a href="https://www.youtube.com/watch?v=9qaTKOtp93g">Exercise 10</a></h3>
+</blockquote>
+
+<p>Finally, you need to implement the C user library side of the user-level
+page fault handling mechanism.</p>
+
+<h2 id="exercise-11"><span style="color:blue">Exercise 11</span></h2>
+<blockquote>
+  <p>Finish <code class="language-plaintext highlighter-rouge">set_pgfault_handler()</code> in <code class="language-plaintext highlighter-rouge">lib/pgfault.c</code>.</p>
+</blockquote>
+
+<blockquote>
+  <h3 id="watch-exercise-11">Watch <a href="https://www.youtube.com/watch?v=9qaTKOtp93g">Exercise 11</a></h3>
+</blockquote>
+
+<h1 id="testing">Testing</h1>
+
+<p>Run <code class="language-plaintext highlighter-rouge">user/faultread</code> (make run-faultread). You should see:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    ...
+    [00000000] new env 00001000
+    [00001000] user fault va 00000000 ip 0080003a
+    TRAP frame ...
+    [00001000] free env 00001000
+</code></pre></div></div>
+
+<p>Run <code class="language-plaintext highlighter-rouge">user/faultdie</code>. You should see:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    ...
+    [00000000] new env 00001000
+    i faulted at va deadbeef, err 6
+    [00001000] exiting gracefully
+    [00001000] free env 00001000
+</code></pre></div></div>
+
+<p>Run <code class="language-plaintext highlighter-rouge">user/faultalloc</code>. You should see:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    ...
+    [00000000] new env 00001000
+    fault deadbeef
+    this string was faulted in at deadbeef
+    fault cafebffe
+    fault cafec000
+    this string was faulted in at cafebffe
+    [00001000] exiting gracefully
+    [00001000] free env 00001000
+</code></pre></div></div>
+
+<p>If you see only the first “this string” line, it means you are not
+handling recursive page faults properly.</p>
+
+<p>Run <code class="language-plaintext highlighter-rouge">user/faultallocbad</code>. You should see:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    ...
+    [00000000] new env 00001000
+    [00001000] user_mem_check assertion failure for va deadbeef
+    [00001000] free env 00001000
+</code></pre></div></div>
+
+<p>Make sure you understand why <code class="language-plaintext highlighter-rouge">user/faultalloc</code> and
+<code class="language-plaintext highlighter-rouge">user/faultallocbad</code> behave differently.</p>
+
+<h2 id="challenge-no-extra-credit-4"><span style="color:green">Challenge (No Extra Credit)</span></h2>
+<blockquote>
+  <p>Extend your kernel so that not only page faults, but <em>all</em>
+types of processor exceptions that code running in user space can
+generate, can be redirected to a user-mode exception handler. Write
+user-mode test programs to test user-mode handling of various exceptions
+such as divide-by-zero, general protection fault, and illegal opcode.</p>
+</blockquote>
+
+<h2 id="implementing-copy-on-write-fork">Implementing Copy-on-Write Fork</h2>
+
+<p>You now have the kernel facilities to implement copy-on-write <code class="language-plaintext highlighter-rouge">fork()</code>
+entirely in user space.</p>
+
+<p>We have provided a skeleton for your <code class="language-plaintext highlighter-rouge">fork()</code> in <code class="language-plaintext highlighter-rouge">lib/fork.c</code>. Like
+<code class="language-plaintext highlighter-rouge">dumbfork()</code>, <code class="language-plaintext highlighter-rouge">fork()</code> should create a new environment, then scan
+through the parent environment’s entire address space and set up
+corresponding page mappings in the child. The key difference is that,
+while <code class="language-plaintext highlighter-rouge">dumbfork()</code> copied <em>pages</em>, <code class="language-plaintext highlighter-rouge">fork()</code> will initially only copy
+page <em>mappings</em>. <code class="language-plaintext highlighter-rouge">fork()</code> will copy each page only when one of the
+environments tries to write it.</p>
+
+<p>The basic control flow for <code class="language-plaintext highlighter-rouge">fork()</code> is as follows:</p>
+
+<ol>
+  <li>The parent installs <code class="language-plaintext highlighter-rouge">pgfault()</code> as the C-level page fault handler,
+using the <code class="language-plaintext highlighter-rouge">set_pgfault_handler()</code> function you implemented above.</li>
+  <li>The parent calls <code class="language-plaintext highlighter-rouge">sys_exofork()</code> to create a child environment.</li>
+  <li>
+    <p>For each writable or copy-on-write page in its address space below
+UTOP, the parent calls <code class="language-plaintext highlighter-rouge">duppage</code>, which should map the page
+copy-on-write into the address space of the child and then <em>remap</em>
+the page copy-on-write in its own address space. <code class="language-plaintext highlighter-rouge">duppage</code> sets
+both PTEs so that the page is not writeable, and to contain
+<code class="language-plaintext highlighter-rouge">PTE_COW</code> in the “avail” field to distinguish copy-on-write pages
+from genuine read-only pages.</p>
+
+    <p>The exception stack is <em>not</em> remapped this way, however. Instead you
+need to allocate a fresh page in the child for the exception stack.
+Since the page fault handler will be doing the actual copying and the
+page fault handler runs on the exception stack, the exception stack
+cannot be made copy-on-write: who would copy it?</p>
+
+    <p><code class="language-plaintext highlighter-rouge">fork()</code> also needs to handle pages that are present, but not
+writable or copy-on-write.</p>
+  </li>
+  <li>The parent sets the user page fault entrypoint for the child to look
+like its own.</li>
+  <li>The child is now ready to run, so the parent marks it runnable.</li>
+</ol>
+
+<p>Each time one of the environments writes a copy-on-write page that it
+hasn’t yet written, it will take a page fault. Here’s the control flow
+for the user page fault handler:</p>
+
+<ol>
+  <li>The kernel propagates the page fault to <code class="language-plaintext highlighter-rouge">_pgfault_upcall</code>, which
+calls <code class="language-plaintext highlighter-rouge">fork()</code>’s <code class="language-plaintext highlighter-rouge">pgfault()</code> handler.</li>
+  <li><code class="language-plaintext highlighter-rouge">pgfault()</code> checks that the fault is a write (check for <code class="language-plaintext highlighter-rouge">FEC_WR</code>
+in the error code) and that the PTE for the page is marked
+<code class="language-plaintext highlighter-rouge">PTE_COW</code>. If not, panic.</li>
+  <li><code class="language-plaintext highlighter-rouge">pgfault()</code> allocates a new page mapped at a temporary location and
+copies the contents of the faulting page into it. Then the fault
+handler maps the new page at the appropriate address with read/write
+permissions, in place of the old read-only mapping.</li>
+</ol>
+
+<p>The user-level <code class="language-plaintext highlighter-rouge">lib/fork.c</code> code must consult the environment’s page
+tables for several of the operations above (e.g., that the PTE for a
+page is marked <code class="language-plaintext highlighter-rouge">PTE_COW</code>). The kernel maps the environment’s page
+tables at <code class="language-plaintext highlighter-rouge">UVPT</code> exactly for this purpose. It uses a <a href="https://pdos.csail.mit.edu/6.828/2014/labs/lab4/uvpt.html">clever mapping trick</a>
+to make it to make it easy to lookup PTEs for user
+code. <code class="language-plaintext highlighter-rouge">lib/entry.S</code> sets up <code class="language-plaintext highlighter-rouge">uvpt</code> and <code class="language-plaintext highlighter-rouge">uvpd</code> so that you can
+easily lookup page-table information in <code class="language-plaintext highlighter-rouge">lib/fork.c</code>.</p>
+
+<h2 id="exercise-12"><span style="color:blue">Exercise 12</span></h2>
+<blockquote>
+  <p>Implement <code class="language-plaintext highlighter-rouge">fork</code>, <code class="language-plaintext highlighter-rouge">duppage</code> and <code class="language-plaintext highlighter-rouge">pgfault</code> in
+<code class="language-plaintext highlighter-rouge">lib/fork.c</code>.</p>
+</blockquote>
+
+<blockquote>
+  <p>Test your code with the <code class="language-plaintext highlighter-rouge">forktree</code> program. It should produce the
+following messages, with interspersed ‘new env’, ‘free env’, and
+‘exiting gracefully’ messages. The messages may not appear in this
+order, and the environment IDs may be different.</p>
+</blockquote>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+    1000: I am ''
+    1001: I am '0'
+    2000: I am '00'
+    2001: I am '000'
+    1002: I am '1'
+    3000: I am '11'
+    3001: I am '10'
+    4000: I am '100'
+    1003: I am '01'
+    5000: I am '010'
+    4001: I am '011'
+    2002: I am '110'
+    1004: I am '001'
+    1005: I am '111'
+    1006: I am '101'
+</code></pre></div></div>
+
+<blockquote>
+  <h3 id="watch-exercise-12">Watch <a href="https://www.youtube.com/watch?v=9qaTKOtp93g">Exercise 12</a></h3>
+</blockquote>
+
+<p>This ends part B. As usual, you can grade your submission with <code class="language-plaintext highlighter-rouge">make grade</code>.</p>
+
+<h1 id="part-c-preemptive-multitasking-and-inter-process-communication-ipc">Part C: Preemptive Multitasking and Inter-Process communication (IPC)</h1>
+
+<p>In the final part of lab 4 you will modify the kernel to preempt
+uncooperative environments and to allow environments to pass messages to
+each other explicitly.</p>
+
+<h2 id="clock-interrupts-and-preemption">Clock Interrupts and Preemption</h2>
+
+<p>Run the <code class="language-plaintext highlighter-rouge">user/spin</code> test program. This test program forks off a child
+environment, which simply spins forever in a tight loop once it receives
+control of the CPU. Neither the parent environment nor the kernel ever
+regains the CPU. This is obviously not an ideal situation in terms of
+protecting the system from bugs or malicious code in user-mode
+environments, because any user-mode environment can bring the whole
+system to a halt simply by getting into an infinite loop and never
+giving back the CPU. In order to allow the kernel to <em>preempt</em> a running
+environment, forcefully retaking control of the CPU from it, we must
+extend the JOS kernel to support external hardware interrupts from the
+clock hardware.</p>
+
+<h1 id="interrupt-discipline">Interrupt discipline</h1>
+
+<p>External interrupts (i.e., device interrupts) are referred to as IRQs.
+There are 16 possible IRQs, numbered 0 through 15. The mapping from IRQ
+number to IDT entry is not fixed. <code class="language-plaintext highlighter-rouge">pic_init</code> in <code class="language-plaintext highlighter-rouge">picirq.c</code> maps IRQs
+0-15 to IDT entries <code class="language-plaintext highlighter-rouge">IRQ_OFFSET</code> through <code class="language-plaintext highlighter-rouge">IRQ_OFFSET+15</code>.</p>
+
+<p>In <code class="language-plaintext highlighter-rouge">inc/trap.h</code>, <code class="language-plaintext highlighter-rouge">IRQ_OFFSET</code> is defined to be decimal 32. Thus the
+IDT entries 32-47 correspond to the IRQs 0-15. For example, the clock
+interrupt is IRQ 0. Thus, <code class="language-plaintext highlighter-rouge">IDT[IRQ_OFFSET+0]</code> (i.e., IDT[32]) contains
+the address of the clock’s interrupt handler routine in the kernel. This
+<code class="language-plaintext highlighter-rouge">IRQ_OFFSET</code> is chosen so that the device interrupts do not overlap
+with the processor exceptions, which could obviously cause confusion.
+(In fact, in the early days of PCs running MS-DOS, the <code class="language-plaintext highlighter-rouge">IRQ_OFFSET</code>
+effectively <em>was</em> zero, which indeed caused massive confusion between
+handling hardware interrupts and handling processor exceptions!)</p>
+
+<p>In JOS, we make a key simplification compared to xv6 Unix. External
+device interrupts are <em>always</em> disabled when in the kernel (and, like
+xv6, enabled when in user space). External interrupts are controlled by
+the <code class="language-plaintext highlighter-rouge">FL_IF</code> flag bit of the <code class="language-plaintext highlighter-rouge">%eflags</code> register (see <code class="language-plaintext highlighter-rouge">inc/mmu.h</code>).
+When this bit is set, external interrupts are enabled. While the bit can
+be modified in several ways, because of our simplification, we will
+handle it solely through the process of saving and restoring <code class="language-plaintext highlighter-rouge">%eflags</code>
+register as we enter and leave user mode.</p>
+
+<p>You will have to ensure that the <code class="language-plaintext highlighter-rouge">FL_IF</code> flag is set in user
+environments when they run so that when an interrupt arrives, it gets
+passed through to the processor and handled by your interrupt code.
+Otherwise, interrupts are <em>masked</em>, or ignored until interrupts are
+re-enabled. We masked interrupts with the very first instruction of the
+bootloader, and so far we have never gotten around to re-enabling them.</p>
+
+<h2 id="exercise-13"><span style="color:blue">Exercise 13</span></h2>
+<blockquote>
+  <p>Modify <code class="language-plaintext highlighter-rouge">kern/trapentry.S</code> and <code class="language-plaintext highlighter-rouge">kern/trap.c</code> to
+initialize the appropriate entries in the IDT and provide handlers for
+IRQs 0 through 15. Then modify the code in <code class="language-plaintext highlighter-rouge">env_alloc()</code> in
+<code class="language-plaintext highlighter-rouge">kern/env.c</code> to ensure that user environments are always run with
+interrupts enabled.</p>
+</blockquote>
+
+<blockquote>
+  <p>The processor never pushes an error code or checks the Descriptor
+Privilege Level (DPL) of the IDT entry when invoking a hardware
+interrupt handler. You might want to re-read section 9.2 of the <a href="http://www.logix.cz/michal/doc/i386/">80386 Reference Manual</a>,
+or section 5.8 of the
+<a href="/ee469/static_files/read/ia32/IA32-3A.pdf">IA-32 Intel Architecture Software Developer’s Manual, Volume
+3</a>, at this time.</p>
+</blockquote>
+
+<blockquote>
+  <p>When you finish this exercise, please do not forget to remove a comment in
+the kern/sched.c:</p>
+</blockquote>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// LAB 4:
+
+// Uncomment the following line after completing exercise 13
+
+//"sti"
+</code></pre></div></div>
+
+<blockquote>
+  <p>After doing this exercise, if you run your kernel with any test program
+that runs for a non-trivial length of time (e.g., <code class="language-plaintext highlighter-rouge">spin</code>), you should
+see the kernel print trap frames for hardware interrupts. While
+interrupts are now enabled in the processor, JOS isn’t yet handling
+them, so you should see it misattribute each interrupt to the currently
+running user environment and destroy it. Eventually it should run out of
+environments to destroy and drop into the monitor.</p>
+</blockquote>
+
+<blockquote>
+  <h3 id="watch-exercise-13">Watch <a href="https://www.youtube.com/watch?v=iDHSlahlIFY">Exercise 13</a></h3>
+</blockquote>
+
+<h1 id="handling-clock-interrupts">Handling Clock Interrupts</h1>
+
+<p>In the <code class="language-plaintext highlighter-rouge">user/spin</code> program, after the child environment was first run,
+it just spun in a loop, and the kernel never got control back. We need
+to program the hardware to generate clock interrupts periodically, which
+will force control back to the kernel where we can switch control to a
+different user environment.</p>
+
+<p>The calls to <code class="language-plaintext highlighter-rouge">lapic_init</code> and <code class="language-plaintext highlighter-rouge">pic_init</code> (from <code class="language-plaintext highlighter-rouge">i386_init</code> in
+<code class="language-plaintext highlighter-rouge">init.c</code>), which we have written for you, set up the clock and the
+interrupt controller to generate interrupts. You now need to write the
+code to handle these interrupts.</p>
+
+<h2 id="exercise-14"><span style="color:blue">Exercise 14</span></h2>
+<blockquote>
+  <p>Modify the kernel’s <code class="language-plaintext highlighter-rouge">trap_dispatch()</code> function so that it
+calls <code class="language-plaintext highlighter-rouge">sched_yield()</code> to find and run a different environment whenever
+a clock interrupt takes place.</p>
+</blockquote>
+
+<blockquote>
+  <p>You should now be able to get the <code class="language-plaintext highlighter-rouge">user/spin</code> test to work: the parent
+environment should fork off the child, <code class="language-plaintext highlighter-rouge">sys_yield()</code> to it a couple
+times but in each case regain control of the CPU after one time slice,
+and finally kill the child environment and terminate gracefully.</p>
+</blockquote>
+
+<blockquote>
+  <h3 id="watch-exercise-14">Watch <a href="https://www.youtube.com/watch?v=iDHSlahlIFY">Exercise 14</a></h3>
+</blockquote>
+
+<p>This is a great time to do some <em>regression testing</em>. Make sure that you
+haven’t broken any earlier part of that lab that used to work (e.g.
+<code class="language-plaintext highlighter-rouge">forktree</code>) by enabling interrupts. Also, try running with multiple
+CPUs using <code class="language-plaintext highlighter-rouge">make CPUS=2</code> <em>target</em>. You should also be able to pass
+<code class="language-plaintext highlighter-rouge">stresssched</code> now. Run make grade to see for sure. You should now get
+a total score of 65/80 points on this lab.</p>
+
+<h2 id="inter-process-communication-ipc">Inter-Process communication (IPC)</h2>
+
+<p>(Technically in JOS this is “inter-environment communication” or “IEC”,
+but everyone else calls it IPC, so we’ll use the standard term.)</p>
+
+<p>We’ve been focusing on the isolation aspects of the operating system,
+the ways it provides the illusion that each program has a machine all to
+itself. Another important service of an operating system is to allow
+programs to communicate with each other when they want to. It can be
+quite powerful to let programs interact with other programs. The Unix
+pipe model is the canonical example.</p>
+
+<p>There are many models for interprocess communication. Even today there
+are still debates about which models are best. We won’t get into that
+debate. Instead, we’ll implement a simple IPC mechanism and then try it
+out.</p>
+
+<h1 id="ipc-in-jos">IPC in JOS</h1>
+
+<p>You will implement a few additional JOS kernel system calls that
+collectively provide a simple interprocess communication mechanism. You
+will implement two system calls, <code class="language-plaintext highlighter-rouge">sys_ipc_recv</code> and
+<code class="language-plaintext highlighter-rouge">sys_ipc_try_send</code>. Then you will implement two library wrappers
+<code class="language-plaintext highlighter-rouge">ipc_recv</code> and <code class="language-plaintext highlighter-rouge">ipc_send</code>.</p>
+
+<p>The “messages” that user environments can send to each other using JOS’s
+IPC mechanism consist of two components: a single 32-bit value, and
+optionally a single page mapping. Allowing environments to pass page
+mappings in messages provides an efficient way to transfer more data
+than will fit into a single 32-bit integer, and also allows environments
+to set up shared memory arrangements easily.</p>
+
+<h1 id="sending-and-receiving-messages">Sending and Receiving Messages</h1>
+
+<p>To receive a message, an environment calls <code class="language-plaintext highlighter-rouge">sys_ipc_recv</code>. This system
+call de-schedules the current environment and does not run it again
+until a message has been received. When an environment is waiting to
+receive a message, <em>any</em> other environment can send it a message - not
+just a particular environment, and not just environments that have a
+parent/child arrangement with the receiving environment. In other words,
+the permission checking that you implemented in Part A will not apply to
+IPC, because the IPC system calls are carefully designed so as to be
+“safe”: an environment cannot cause another environment to malfunction
+simply by sending it messages (unless the target environment is also
+buggy).</p>
+
+<p>To try to send a value, an environment calls <code class="language-plaintext highlighter-rouge">sys_ipc_try_send</code> with
+both the receiver’s environment id and the value to be sent. If the
+named environment is actually receiving (it has called <code class="language-plaintext highlighter-rouge">sys_ipc_recv</code>
+and not gotten a value yet), then the send delivers the message and
+returns 0. Otherwise the send returns <code class="language-plaintext highlighter-rouge">-E_IPC_NOT_RECV</code> to indicate
+that the target environment is not currently expecting to receive a
+value.</p>
+
+<p>A library function <code class="language-plaintext highlighter-rouge">ipc_recv</code> in user space will take care of calling
+<code class="language-plaintext highlighter-rouge">sys_ipc_recv</code> and then looking up the information about the received
+values in the current environment’s <code class="language-plaintext highlighter-rouge">struct Env</code>.</p>
+
+<p>Similarly, a library function <code class="language-plaintext highlighter-rouge">ipc_send</code> will take care of repeatedly
+calling <code class="language-plaintext highlighter-rouge">sys_ipc_try_send</code> until the send succeeds.</p>
+
+<h1 id="transferring-pages">Transferring Pages</h1>
+
+<p>When an environment calls <code class="language-plaintext highlighter-rouge">sys_ipc_recv</code> with a valid <code class="language-plaintext highlighter-rouge">dstva</code>
+parameter (below <code class="language-plaintext highlighter-rouge">UTOP</code>), the environment is stating that it is
+willing to receive a page mapping. If the sender sends a page, then that
+page should be mapped at <code class="language-plaintext highlighter-rouge">dstva</code> in the receiver’s address space. If
+the receiver already had a page mapped at <code class="language-plaintext highlighter-rouge">dstva</code>, then that previous
+page is unmapped.</p>
+
+<p>When an environment calls <code class="language-plaintext highlighter-rouge">sys_ipc_try_send</code> with a valid <code class="language-plaintext highlighter-rouge">srcva</code>
+(below <code class="language-plaintext highlighter-rouge">UTOP</code>), it means the sender wants to send the page currently
+mapped at <code class="language-plaintext highlighter-rouge">srcva</code> to the receiver, with permissions <code class="language-plaintext highlighter-rouge">perm</code>. After a
+successful IPC, the sender keeps its original mapping for the page at
+<code class="language-plaintext highlighter-rouge">srcva</code> in its address space, but the receiver also obtains a mapping
+for this same physical page at the <code class="language-plaintext highlighter-rouge">dstva</code> originally specified by the
+receiver, in the receiver’s address space. As a result this page becomes
+shared between the sender and receiver.</p>
+
+<p>If either the sender or the receiver does not indicate that a page
+should be transferred, then no page is transferred. After any IPC the
+kernel sets the new field <code class="language-plaintext highlighter-rouge">env_ipc_perm</code> in the receiver’s <code class="language-plaintext highlighter-rouge">Env</code>
+structure to the permissions of the page received, or zero if no page
+was received.</p>
+
+<h1 id="implementing-ipc">Implementing IPC</h1>
+
+<h2 id="exercise-15"><span style="color:blue">Exercise 15</span></h2>
+<blockquote>
+  <p>Implement <code class="language-plaintext highlighter-rouge">sys_ipc_recv</code> and <code class="language-plaintext highlighter-rouge">sys_ipc_try_send</code> in
+<code class="language-plaintext highlighter-rouge">kern/syscall.c</code>. Read the comments on both before implementing them,
+since they have to work together. When you call <code class="language-plaintext highlighter-rouge">envid2env</code> in these
+routines, you should set the <code class="language-plaintext highlighter-rouge">checkperm</code> flag to 0, meaning that any
+environment is allowed to send IPC messages to any other environment,
+and the kernel does no special permission checking other than verifying
+that the target envid is valid.</p>
+</blockquote>
+
+<blockquote>
+  <p>Then implement the <code class="language-plaintext highlighter-rouge">ipc_recv</code> and <code class="language-plaintext highlighter-rouge">ipc_send</code> functions in
+<code class="language-plaintext highlighter-rouge">lib/ipc.c</code>.</p>
+</blockquote>
+
+<blockquote>
+  <p>Use the <code class="language-plaintext highlighter-rouge">user/pingpong</code> and <code class="language-plaintext highlighter-rouge">user/primes</code> functions to test your IPC
+mechanism. <code class="language-plaintext highlighter-rouge">user/primes</code> will generate for each prime number a new
+environment until JOS runs out of environments. You might find it
+interesting to read <code class="language-plaintext highlighter-rouge">user/primes.c</code> to see all the forking and IPC
+going on behind the scenes.</p>
+</blockquote>
+
+<blockquote>
+  <h3 id="watch-exercise-15">Watch <a href="https://www.youtube.com/watch?v=iDHSlahlIFY">Exercise 15</a></h3>
+</blockquote>
+
+<h2 id="challenge-no-extra-credit-5"><span style="color:green">Challenge (No Extra Credit)</span></h2>
+<blockquote>
+  <p>Why does <code class="language-plaintext highlighter-rouge">ipc_send</code> have to loop? Change the system call
+interface so it doesn’t have to. Make sure you can handle multiple
+environments trying to send to one environment at the same time.</p>
+</blockquote>
+
+<p><strong>This ends part C.</strong> Make sure you pass all of the make grade tests and
+don’t forget to write up your answers to the questions in <code class="language-plaintext highlighter-rouge">answers-lab4.txt</code>,
+and type <strong>make handin</strong> in the lab directory to hand in your lab.</p>
+
+  </article>
+
+</div>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+<!--     <h2 class="footer-heading">Purdue University</h2> -->
+         <div class="footer-col-wrapper">
+      <div class="footer-col  footer-col-1">
+ 
+
+         <p class="text">
+Elmore Family School of Electrical and Computer Engineering<br />
+Purdue University<br />
+West Lafayette, IN, USA<br />
+
+      </div>
+
+      <div class="footer-col  footer-col-2">
+       <ul class="social-media-list">
+     
+
+          
+
+          
+  <li>
+    <a href="https://twitter.com/machiry_msidc">
+      <i class="fab fa-twitter" style="color:gray"></i> machiry_msidc
+    </a>
+  </li>
+
+
+          
+
+          
+
+          
+  <li>
+    <a href="https://engineering.purdue.edu/ECE">
+      <i class="fas fa-globe" style="color:gray"></i> engineering.purdue.edu/ECE
+    </a>
+  </li>
+
+
+
+
+       
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+  </body>
+
+</html>
+<!-- d.s.m.s.050600.062508.030515.080516.030818 | "Baby, I'm Yours" -->
